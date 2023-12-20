@@ -1,0 +1,20 @@
+body {
+    min-height: 100vh;
+    min-height: fill-available;
+    min-height: -webkit-fill-available;
+    min-width: 100vh;
+    min-width: fill-available;
+    min-width: -webkit-fill-available;;
+}
+html {
+    height: fill-available;
+    height: -webkit-fill-available;
+    width: fill-available;
+    width: -webkit-fill-available;;
+}
+div#root .HomePanel{
+    height: 1080;
+    /* height: -webkit-fill-available; */
+    width: 1920;
+    /* width: -webkit-fill-available; */
+}
