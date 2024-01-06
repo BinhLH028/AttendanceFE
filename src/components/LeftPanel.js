@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Link,Route, Routes } from "react-router-dom"
+import { Link, Route, Routes, useParams } from "react-router-dom"
 import "./../style/LeftPanelStyle.css";
 import LoadingScreen from './LoadingScreen';
 import useAuth from "./hooks/useAuth";
@@ -24,6 +24,9 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
     const temp = [];
 
+    const params = useParams();
+    const id = params.id;
+
     useEffect(() => {
         listSemester.map(({ sectionId, semester, year }) => (
             temp.push({
@@ -41,9 +44,9 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
             userId: auth.userData.userId,
             role: auth.userData.role,
         });
-        const response = await axiosPrivate.post("/course_section/"+ sectionId, userRequest)
-        .catch(error => { console.log(error) });
-        
+        const response = await axiosPrivate.post("/course_section/" + sectionId, userRequest)
+            .catch(error => { console.log(error) });
+
         const data = JSON.stringify(response.data.body);
         if (data != '{}') {
             window.localStorage.setItem('listCourse', data);
@@ -55,7 +58,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
     }
 
     const getCourseAttendanceData = async (id) => {
-        const response = await axiosPrivate.get("/attendance?cs="+ id)
+        const response = await axiosPrivate.get("/attendance?cs=" + id)
         console.log(response)
         const data = JSON.stringify(response.data.body);
         if (data != '{}') {
@@ -69,7 +72,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
         // setSelectedCourse(JSON.parse(data));
         // localAttendanceData
         // .catch(error => { console.log(error) });
-        
+
         // const data = JSON.stringify(response.data.body);
         // if (data != '{}') {
         //     window.localStorage.setItem('listCourse', data);
@@ -88,13 +91,15 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 , initData[0].semester, initData[0].year);
 
         }
+
+        getCourseAttendanceData(id);
     }, [initData])
 
 
     useEffect(() => {
         setIsLoading(false);
         console.log(listCourse)
-      }, [listCourse])
+    }, [listCourse])
 
 
 
@@ -102,7 +107,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
         var a = document.getElementById("semester");
         a.textContent = "Học Kỳ : " + semester + " Năm " + year
-        if (sectionId != undefined){
+        if (sectionId != undefined) {
             getListCourse(sectionId);
             console.log(sectionId + "--" + a.textContent)
         }
@@ -112,14 +117,15 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
         // var a = document.getElementById("semester");
         // a.textContent = "Học Kỳ : " + semester + " Năm " + year
-        if (id != undefined){
+        if (id != undefined) {
             getCourseAttendanceData(id);
             // console.log(id)
         }
     }
 
-    if (isLoading ){
-        return (<LoadingScreen />)}
+    if (isLoading) {
+        return (<LoadingScreen />)
+    }
 
     return (
         <div class="leftpanel"
@@ -148,7 +154,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                         <ul class="openright">
                             {listSemester.map(({ sectionId, semester, year }) => (
                                 <li key={sectionId}>
-                                    <Link  onClick={() => changeSemester(sectionId, semester, year)}>{semester} năm {year}</Link>
+                                    <Link onClick={() => changeSemester(sectionId, semester, year)}>{semester} năm {year}</Link>
                                 </li>
                             ))}
                         </ul>
@@ -156,20 +162,19 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                     <li class="dropdown">
                         <a href="#">Danh Sách Lớp Môn Học</a>
                         <ul class="openbottom">
-                            {listCourse.map(({ id, courseCode, courseName}) => (
+                            {listCourse.map(({ id, courseCode, courseName }) => (
                                 <li key={id}>
-                                    <Link 
-                                    to={{
-                                        pathname: `/cs/${id}`,
-                                      }}
-                                    onClick={() => changeCourse(id)}>{courseCode}</Link>
+                                    <Link
+                                        to={{
+                                            pathname: `/cs/${id}`,
+                                        }}
+                                        onClick={() => changeCourse(id)}>{courseCode}</Link>
                                 </li>
                             ))}
                         </ul>
                     </li>
                 </ul>
             </nav>
-
         </div>
     )
 }

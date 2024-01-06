@@ -5,18 +5,25 @@ import LoginComponent from './components/LoginComponent';
 import RegisterComponent from './components/RegisterComponent';
 import Home from './components/Home';
 import RightPanel from './components/RightPanel';
-
+import PersistLogin from './components/PersistLogin';
 
 function App() {
   return (
     <div className="mainpage">
       <BrowserRouter>
         <Routes>
-          <Route element={<RequireAuth allowedRoles={["USER", "TEACHER"]} />}>
-            <Route path='/' element={<Home />}>
-              {/* <Route path='/abc'  element={<RightPanel/>}/> */}
+          <Route element={<PersistLogin />}>
+            <Route path='/' element={<RequireAuth allowedRoles={["USER", "TEACHER"]} />}>
+              <Route index element={<Home />}>
+                {/* <Route path='/abc'  element={<RightPanel/>}/> */}
+              </Route>
+
+              <Route path='cs/:id'>
+                <Route index element={<Home />} />
+              </Route>
             </Route>
           </Route>
+
           <Route path='/login' element={<LoginComponent />}></Route>
           <Route path='/register' element={<RegisterComponent />}></Route>
 

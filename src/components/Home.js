@@ -68,8 +68,9 @@ const Home = () => {
     console.log(listSemester)
   }, [listSemester])
 
-  if (isLoading ){
-    return (<LoadingScreen />)}
+  if (isLoading) {
+    return (<LoadingScreen />)
+  }
 
   return (
     <div className="HomePanel"
@@ -81,16 +82,16 @@ const Home = () => {
         height: "100%",
         // alignItems: "start",
       }}>
-      <Modal 
-        open={openModal} 
+      <Modal
+        open={openModal}
         onClose={() => setOpenModal(false)} />
       <Leftpanel {...{ listSemester, selectedSemester, setSelectedCourse, setCurSC }} />
       <Routes>
-        <Route path="/cs/:id" render={(selectedCourse,curCS,setOpenModal)=> <RightPanel {...{selectedCourse,curCS,setOpenModal}} /> } />
+        <Route path="/cs/:id" render={(selectedCourse, curCS, setOpenModal) => <RightPanel {...{ selectedCourse, curCS, setOpenModal }} />} />
         {/* <Route path="/cs/:id"  element={<RightPanel {...{selectedCourse, curCS, setOpenModal}}/>}></Route> */}
       </Routes>
-      <RightPanel {...{selectedCourse, curCS, setOpenModal}}/>
-      
+      <RightPanel {...{ selectedCourse, curCS, setOpenModal }} />
+
     </div>
   )
 }

@@ -18,7 +18,7 @@ const LoginComponent = () => {
     // const refresh = useRefreshToken();
     // const axiosPrivate = useAxiosPrivate(); 
 
-    const { setAuth } = useAuth();
+    const { setAuth, persist, setPersist } = useAuth();
     const { auth } = useAuth();
 
     const userRef = useRef();
@@ -108,6 +108,9 @@ const LoginComponent = () => {
         console.log(response)
     }
 
+    useEffect(() => {
+        localStorage.setItem("persist", true);
+    }, [])
 
     return (
         <div className="login">

@@ -144,7 +144,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
     return (
         <div class="RightPanel" style={{
             height: "100vh",
-            width: "120rem",
+            // width: "120rem",
             display: "flex",
             left: "0",
             // flex: "0 0 87%",
@@ -156,7 +156,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
         }}>
             
             <div class = "table">
-                <div class="table-wrapper">
+                <div class="table-wrapper" style={{ minWidth: '80%' }}>
                     <table>
                         <thead>
                             <tr>
