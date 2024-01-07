@@ -60,12 +60,12 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    console.log(selectedSemester)
+    // console.log(selectedSemester)
   }, [selectedSemester])
 
   useEffect(() => {
     setIsLoading(false);
-    console.log(listSemester)
+    // console.log(listSemester)
   }, [listSemester])
 
   if (isLoading) {

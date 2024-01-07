@@ -105,7 +105,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
         if (selectedCourse != '{}' && selectedCourse != undefined) {
             setUpData(selectedCourse);
         }
-        console.log(data)
+        // console.log(data)
 
     }, [selectedCourse])
 
@@ -118,7 +118,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
 
     const createAttendanceSession = async () => {
         const response = await axiosPrivate.post("/attendance?cs=" + curCS).catch(error => { console.log(error) });
-        console.log(client.getFingerprint())
+        // console.log(client.getFingerprint())
         setOpenModal(true);
         return (
             <div id = "abc"
