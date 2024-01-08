@@ -1,12 +1,14 @@
 import React, { useEffect, useState, ReactElement } from 'react'
 import { ClientJS } from 'clientjs';
+import { over } from 'stompjs';
+import SockJS from 'sockjs-client';
 import useAuth from "./hooks/useAuth";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 import Modal from './Modal';
 
 import "./../style/RightPanel.css";
 
-
+var stompClient = null;
 const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
 
     const client = new ClientJS();
@@ -17,10 +19,77 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
     const mapData = new Map();
 
     const [isFectch, setIsFetch] = new useState(true);
+    const [privateChats, setPrivateChats] = useState(new Map()); 
+
+    const [userData, setUserData] = useState({
+        username: '',
+        receivername: '',
+        connected: false,
+        message: ''
+      });
+    useEffect(() => {
+      console.log(userData);
+    }, [userData]);
 
     const [data, setData] = new useState([])
 
     let i = 1;
+
+    const connect = () => {
+        let Sock = new SockJS('http://localhost:8080/ws');
+        stompClient = over(Sock);
+        stompClient.connect({}, onConnected, onError);
+    }
+
+    const onConnected = () => {
+        setUserData({ ...auth, "connected": true });
+        stompClient.subscribe('/topic/messages', onMessageReceived);
+        stompClient.subscribe('/user/' + userData.username + '/private', onPrivateMessage);
+        userJoin();
+    }
+
+    const userJoin = () => {
+        var chatMessage = {
+            senderName: userData.username,
+            status: "JOIN"
+        };
+        stompClient.send("/ws/message", {}, JSON.stringify(chatMessage));
+    }
+
+    const onMessageReceived = (payload) => {
+        var payloadData = JSON.parse(payload.body);
+        switch (payloadData.status) {
+            case "JOIN":
+                if (!privateChats.get(payloadData.senderName)) {
+                    privateChats.set(payloadData.senderName, []);
+                    setPrivateChats(new Map(privateChats));
+                }
+                break;
+            case "MESSAGE":
+                // publicChats.push(payloadData);
+                // setPublicChats([...publicChats]);
+                break;
+        }
+    }
+
+    const onPrivateMessage = (payload)=>{
+        console.log(payload);
+        var payloadData = JSON.parse(payload.body);
+        if(privateChats.get(payloadData.senderName)){
+            privateChats.get(payloadData.senderName).push(payloadData);
+            setPrivateChats(new Map(privateChats));
+        }else{
+            let list =[];
+            list.push(payloadData);
+            privateChats.set(payloadData.senderName,list);
+            setPrivateChats(new Map(privateChats));
+        }
+    }
+
+    const onError = (err) => {
+        console.log(err);
+        
+    }
 
     // const getData = (value) => {
     //     var result = Object.values(value)
@@ -121,22 +190,22 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
         // console.log(client.getFingerprint())
         setOpenModal(true);
         return (
-            <div id = "abc"
-            style={{
-                width:"100%",
-                height:"100%",
-                backgroundColor:"beige",
-                zIndex:"3"
-            }}>
+            <div id="abc"
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "beige",
+                    zIndex: "3"
+                }}>
 
             </div>
         );
     }
 
-    const checkAttendance = () => {
+    const saveAttendanceSession = () => {
 
     }
-    
+
     if (isFectch) return (
         <div>dang load</div>
     )
@@ -154,8 +223,8 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
             background: "transparent",
             padding: "20px 0 0 10rem"
         }}>
-            
-            <div class = "table">
+
+            <div class="table">
                 <div class="table-wrapper" style={{ minWidth: '80%' }}>
                     <table>
                         <thead>
@@ -191,7 +260,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
                                     {/* {getData(value)} */}
                                     {/* {Object.} */}
                                     {Object.entries(attendanceSheet).map(([key, val]) => (
-                                        <td key={key}>{val ? 'có':'vắng'}</td>
+                                        <td key={key}>{val ? 'có' : 'vắng'}</td>
                                     ))}
                                 </tr>
                             ))}
@@ -199,39 +268,39 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
                     </table>
                 </div>
             </div>
-                {/* && client.isMobile() */}
-                {["USER"].includes(auth.userData.role)  &&
+            {/* && client.isMobile() */}
+            {["USER"].includes(auth.userData.role) &&
                 (
-                    <div className='btn_wrapper' 
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        position:"absolute",
-                        bottom:"50px",
-                        marginLeft: "4.5rem"
-                    }}>
-                        <div className='btn' 
+                    <div className='btn_wrapper'
+                        style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "center",
+                            position: "absolute",
+                            bottom: "50px",
+                            marginLeft: "4.5rem"
+                        }}>
+                        <div className='btn'
                             style={{}} onClick={() => createAttendanceSession()}>
                             <span>Tạo Phiên Điểm Danh</span>
                         </div>
-                        <div className='btn' 
+                        <div className='btn'
                             style={{}} onClick={() => createAttendanceSession()}>
                             <span>Chỉnh Sửa</span>
                         </div>
-                        <div className='btn' 
-                            style={{}} onClick={() => createAttendanceSession()}>
+                        <div className='btn'
+                            style={{}} onClick={() => saveAttendanceSession()}>
                             <span>Lưu phiên</span>
                         </div>
                     </div>
                 )}
-                {/* {["USER"].includes(auth.userData.role) && 
+            {/* {["USER"].includes(auth.userData.role) && 
                 (<div className='btn' 
                     style={{position:"absolute",
                     bottom:"50px"}} onClick={() => checkAttendance()}>
                     <span>Điểm Danh</span>
                 </div>)} */}
-                {/* <Modal 
+            {/* <Modal 
                 open={openModal} 
                 onClose={() => setOpenModal(false)} /> */}
         </div>

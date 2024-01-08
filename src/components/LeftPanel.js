@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Link, Route, Routes, useParams } from "react-router-dom"
+import { Link, NavLink, Route, Routes, useParams } from "react-router-dom"
 import "./../style/LeftPanelStyle.css";
 import LoadingScreen from './LoadingScreen';
 import useAuth from "./hooks/useAuth";
@@ -169,11 +169,12 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                         <ul class="openbottom">
                             {listCourse.map(({ id, courseCode, courseName }) => (
                                 <li key={id}>
-                                    <Link
+                                    <NavLink
                                         to={{
                                             pathname: `/cs/${id}`,
                                         }}
-                                        onClick={() => changeCourse(id)}>{courseCode}</Link>
+                                        onClick={() => changeCourse(id)}>{courseCode}
+                                        </NavLink>
                                 </li>
                             ))}
                         </ul>
