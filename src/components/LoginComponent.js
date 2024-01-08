@@ -19,7 +19,6 @@ const LoginComponent = () => {
     // const axiosPrivate = useAxiosPrivate(); 
 
     const { setAuth, persist, setPersist } = useAuth();
-    const { auth } = useAuth();
 
     const userRef = useRef();
     const errRef = useRef();
@@ -81,17 +80,19 @@ const LoginComponent = () => {
         setUser("");
     }
 
-
     const sendLoginRequest = async (e) => {
         let loginData = JSON.stringify({
             email: email,
             password: password,
         });
         const response = await httpClient.post("/user/authenticate", loginData)
-        const accessToken = response?.data?.body?.accessToken;
-        const userData = response?.data?.body?.user;
-        setAuth({ email, password, accessToken, userData });
-        console.log(response)
+        const accessToken = response.data.body.accessToken;
+        const refreshToken = response.data.body.refreshToken;
+        const userData = response.data.body.user;
+        setAuth({ email, password, accessToken, refreshToken, userData });
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        // console.log(response);
 
         if (response.status === 200)
         navigate(from, { replace: true });
@@ -105,12 +106,12 @@ const LoginComponent = () => {
             role: "USER",
         });
         const response = await httpClient.post("/user/register", registerData)
-        console.log(response)
+        // console.log(response)
     }
 
     useEffect(() => {
         localStorage.setItem("persist", true);
-    }, [])
+    }, [persist])
 
     return (
         <div className="login">

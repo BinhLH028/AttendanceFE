@@ -5,6 +5,7 @@ import "./../style/LeftPanelStyle.css";
 import LoadingScreen from './LoadingScreen';
 import useAuth from "./hooks/useAuth";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
+import { PoweroffOutlined } from '@ant-design/icons';
 
 
 const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC }) => {
@@ -59,7 +60,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
     const getCourseAttendanceData = async (id) => {
         const response = await axiosPrivate.get("/attendance?cs=" + id)
-        console.log(response)
+        // console.log(response)
         const data = JSON.stringify(response.data.body);
         if (data != '{}') {
             window.localStorage.setItem('attendanceData', data);
@@ -92,13 +93,13 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
         }
 
-        getCourseAttendanceData(id);
+        // getCourseAttendanceData(id);
     }, [initData])
 
 
     useEffect(() => {
         setIsLoading(false);
-        console.log(listCourse)
+        // console.log(listCourse)
     }, [listCourse])
 
 
@@ -109,7 +110,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
         a.textContent = "Học Kỳ : " + semester + " Năm " + year
         if (sectionId != undefined) {
             getListCourse(sectionId);
-            console.log(sectionId + "--" + a.textContent)
+            // console.log(sectionId + "--" + a.textContent)
         }
     }
 
@@ -127,6 +128,11 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
         return (<LoadingScreen />)
     }
 
+    const handleLogout = () => {
+        localStorage.clear();
+        window.location.href = '/';
+    }
+
     return (
         <div class="leftpanel"
             style={{
@@ -135,11 +141,10 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 // height: "1080px",
                 width: "8rem",
                 height: "100vh",
-
                 display: "flex",
                 position: "fixed",
                 flexDirection: "column",
-                justifyContent: "left",
+                justifyContent: "space-between",
                 alignItems: "start",
                 background: "linear-gradient(to bottom, rgb(0, 82, 212), rgb(67, 100, 247), rgb(111, 177, 252))",
                 boxShadow: "3px 7px 10px rgba(0,0,0,.5)"
@@ -175,6 +180,9 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                     </li>
                 </ul>
             </nav>
+            <div style={{ height: '5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <PoweroffOutlined style={{ fontSize: '2rem', cursor: 'pointer' }} onClick={handleLogout} />
+            </div>
         </div>
     )
 }
