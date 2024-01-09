@@ -5,6 +5,7 @@ import useAxiosPrivate from './hooks/useAxiosPrivate';
 import Modal from './Modal';
 
 import "./../style/RightPanel.css";
+import { showErrorMessage } from '../util/toastdisplay';
 
 
 const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
@@ -117,17 +118,18 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
     }, [data])
 
     const createAttendanceSession = async () => {
-        const response = await axiosPrivate.post("/attendance?cs=" + curCS).catch(error => { console.log(error) });
+        const response = await axiosPrivate.post("/attendance?cs=" + curCS)
+            .catch(error => { showErrorMessage(error) });;
         // console.log(client.getFingerprint())
         setOpenModal(true);
         return (
-            <div id = "abc"
-            style={{
-                width:"100%",
-                height:"100%",
-                backgroundColor:"beige",
-                zIndex:"3"
-            }}>
+            <div id="abc"
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "beige",
+                    zIndex: "3"
+                }}>
 
             </div>
         );
@@ -136,7 +138,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
     const checkAttendance = () => {
 
     }
-    
+
     if (isFectch) return (
         <div>dang load</div>
     )
@@ -154,8 +156,8 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
             background: "transparent",
             padding: "20px 0 0 10rem"
         }}>
-            
-            <div class = "table">
+
+            <div class="table">
                 <div class="table-wrapper" style={{ minWidth: '80%' }}>
                     <table>
                         <thead>
@@ -191,7 +193,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
                                     {/* {getData(value)} */}
                                     {/* {Object.} */}
                                     {Object.entries(attendanceSheet).map(([key, val]) => (
-                                        <td key={key}>{val ? 'có':'vắng'}</td>
+                                        <td key={key}>{val ? 'có' : 'vắng'}</td>
                                     ))}
                                 </tr>
                             ))}
@@ -199,39 +201,39 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
                     </table>
                 </div>
             </div>
-                {/* && client.isMobile() */}
-                {["USER"].includes(auth.userData.role)  &&
+            {/* && client.isMobile() */}
+            {["USER"].includes(auth.userData.role) &&
                 (
-                    <div className='btn_wrapper' 
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        position:"absolute",
-                        bottom:"50px",
-                        marginLeft: "4.5rem"
-                    }}>
-                        <div className='btn' 
+                    <div className='btn_wrapper'
+                        style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "center",
+                            position: "absolute",
+                            bottom: "50px",
+                            marginLeft: "4.5rem"
+                        }}>
+                        <div className='btn'
                             style={{}} onClick={() => createAttendanceSession()}>
                             <span>Tạo Phiên Điểm Danh</span>
                         </div>
-                        <div className='btn' 
+                        <div className='btn'
                             style={{}} onClick={() => createAttendanceSession()}>
                             <span>Chỉnh Sửa</span>
                         </div>
-                        <div className='btn' 
+                        <div className='btn'
                             style={{}} onClick={() => createAttendanceSession()}>
                             <span>Lưu phiên</span>
                         </div>
                     </div>
                 )}
-                {/* {["USER"].includes(auth.userData.role) && 
+            {/* {["USER"].includes(auth.userData.role) && 
                 (<div className='btn' 
                     style={{position:"absolute",
                     bottom:"50px"}} onClick={() => checkAttendance()}>
                     <span>Điểm Danh</span>
                 </div>)} */}
-                {/* <Modal 
+            {/* <Modal 
                 open={openModal} 
                 onClose={() => setOpenModal(false)} /> */}
         </div>

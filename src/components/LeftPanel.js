@@ -1,11 +1,13 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Link, Route, Routes, useParams } from "react-router-dom"
+import { Link, Route, Routes, useParams, useNavigate } from "react-router-dom"
 import "./../style/LeftPanelStyle.css";
 import LoadingScreen from './LoadingScreen';
 import useAuth from "./hooks/useAuth";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 import { PoweroffOutlined } from '@ant-design/icons';
+import useLogout from "./hooks/useLogout";
+import { showErrorMessage } from "../util/toastdisplay";
 
 
 const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC }) => {
@@ -14,7 +16,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
     var localAttendanceData = JSON.parse(window.localStorage.getItem("attendanceData"));
     const axiosPrivate = useAxiosPrivate();
 
-    const { auth } = useAuth();
+    const { auth, setAuth } = useAuth();
     const [onFirstLoad, setOnFirstLoad] = new useState(true);
 
     const [initData, setInitData] = useState([{}]);
@@ -27,6 +29,8 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
     const params = useParams();
     const id = params.id;
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         listSemester.map(({ sectionId, semester, year }) => (
@@ -46,7 +50,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
             role: auth.userData.role,
         });
         const response = await axiosPrivate.post("/course_section/" + sectionId, userRequest)
-            .catch(error => { console.log(error) });
+            .catch(error => { showErrorMessage(error) });
 
         const data = JSON.stringify(response.data.body);
         if (data != '{}') {
@@ -60,7 +64,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
     const getCourseAttendanceData = async (id) => {
         const response = await axiosPrivate.get("/attendance?cs=" + id)
-        // console.log(response)
+            .catch(error => { showErrorMessage(error) });
         const data = JSON.stringify(response.data.body);
         if (data != '{}') {
             window.localStorage.setItem('attendanceData', data);
@@ -70,52 +74,31 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
             await setSelectedCourse(localAttendanceData);
             await setCurSC(id);
         }
-        // setSelectedCourse(JSON.parse(data));
-        // localAttendanceData
-        // .catch(error => { console.log(error) });
-
-        // const data = JSON.stringify(response.data.body);
-        // if (data != '{}') {
-        //     window.localStorage.setItem('listCourse', data);
-        //     localCourseData = JSON.parse(window.localStorage.getItem("listCourse"));
-        // }
-        // if (localCourseData != '{}') {
-        //     await setListCourse(localCourseData);
-        // }
     }
 
     useEffect(() => {
-
         if (initData.length >= 1) {
-
             changeSemester(initData[0].sectionId
                 , initData[0].semester, initData[0].year);
-
         }
-
-        // getCourseAttendanceData(id);
     }, [initData])
-
 
     useEffect(() => {
         setIsLoading(false);
         // console.log(listCourse)
     }, [listCourse])
 
-
-
     const changeSemester = (sectionId, semester, year) => {
-
         var a = document.getElementById("semester");
         a.textContent = "Học Kỳ : " + semester + " Năm " + year
         if (sectionId != undefined) {
             getListCourse(sectionId);
             // console.log(sectionId + "--" + a.textContent)
         }
+        console.log(auth?.accessToken);
     }
 
     const changeCourse = (id) => {
-
         // var a = document.getElementById("semester");
         // a.textContent = "Học Kỳ : " + semester + " Năm " + year
         if (id != undefined) {
@@ -124,13 +107,16 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
         }
     }
 
+    const logout = useLogout();
+
     if (isLoading) {
         return (<LoadingScreen />)
     }
 
     const handleLogout = () => {
+        logout();
         localStorage.clear();
-        window.location.href = '/';
+        navigate("/login", { replace: true });
     }
 
     return (
