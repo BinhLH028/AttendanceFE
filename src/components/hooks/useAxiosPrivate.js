@@ -2,10 +2,12 @@ import { axiosPrivate } from "../../api/http-common";
 import { useEffect } from "react";
 import useRefreshToken from "./useRefreshToken";
 import useAuth from "./useAuth";
+import { useNavigate } from "react-router-dom";
 
 const useAxiosPrivate = () => {
     const refresh = useRefreshToken();
     const { auth } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
 

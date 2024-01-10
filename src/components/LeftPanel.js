@@ -49,30 +49,38 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
             userId: auth.userData.userId,
             role: auth.userData.role,
         });
-        const response = await axiosPrivate.post("/course_section/" + sectionId, userRequest)
-            .catch(error => { showErrorMessage(error) });
 
-        const data = JSON.stringify(response.data.body);
-        if (data != '{}') {
-            window.localStorage.setItem('listCourse', data);
-            localCourseData = JSON.parse(window.localStorage.getItem("listCourse"));
-        }
-        if (localCourseData != '{}') {
-            await setListCourse(localCourseData);
+        try {
+            const response = await axiosPrivate.post("/course_section/" + sectionId, userRequest);
+
+            const data = JSON.stringify(response.data.body);
+            if (data != '{}') {
+                window.localStorage.setItem('listCourse', data);
+                localCourseData = JSON.parse(window.localStorage.getItem("listCourse"));
+            }
+            if (localCourseData != '{}') {
+                await setListCourse(localCourseData);
+            }
+        } catch(error) {
+            console.log(error);
         }
     }
 
     const getCourseAttendanceData = async (id) => {
-        const response = await axiosPrivate.get("/attendance?cs=" + id)
-            .catch(error => { showErrorMessage(error) });
-        const data = JSON.stringify(response.data.body);
-        if (data != '{}') {
-            window.localStorage.setItem('attendanceData', data);
-            localAttendanceData = JSON.parse(window.localStorage.getItem("attendanceData"));
-        }
-        if (localAttendanceData != '{}') {
-            await setSelectedCourse(localAttendanceData);
-            await setCurSC(id);
+        try {
+            const response = await axiosPrivate.get("/attendance?cs=" + id)
+                .catch(error => { showErrorMessage(error) });
+            const data = JSON.stringify(response.data.body);
+            if (data != '{}') {
+                window.localStorage.setItem('attendanceData', data);
+                localAttendanceData = JSON.parse(window.localStorage.getItem("attendanceData"));
+            }
+            if (localAttendanceData != '{}') {
+                await setSelectedCourse(localAttendanceData);
+                await setCurSC(id);
+            }
+        } catch(error) {
+            console.log(error);
         }
     }
 
