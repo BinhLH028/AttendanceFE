@@ -9,6 +9,7 @@ import Modal from './Modal';
 import "./../style/RightPanel.css";
 
 var stompClient = null;
+const BASE_URL = 'http://localhost:8080/';
 const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
 
     const client = new ClientJS();
@@ -19,7 +20,11 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
     const mapData = new Map();
 
     const [isFectch, setIsFetch] = new useState(true);
-    const [privateChats, setPrivateChats] = useState(new Map()); 
+
+    //
+    const [privateChats, setPrivateChats] = useState(new Map());     
+    const [publicChats, setPublicChats] = useState([]); 
+    const [tab,setTab] =useState("CHATROOM");
 
     const [userData, setUserData] = useState({
         username: '',
@@ -27,6 +32,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
         connected: false,
         message: ''
       });
+
     useEffect(() => {
       console.log(userData);
     }, [userData]);
@@ -35,43 +41,43 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
 
     let i = 1;
 
-    const connect = () => {
+    const connect =()=>{
         let Sock = new SockJS('http://localhost:8080/ws');
         stompClient = over(Sock);
-        stompClient.connect({}, onConnected, onError);
+        stompClient.connect({},onConnected, onError);
     }
 
     const onConnected = () => {
-        setUserData({ ...auth, "connected": true });
-        stompClient.subscribe('/topic/messages', onMessageReceived);
-        stompClient.subscribe('/user/' + userData.username + '/private', onPrivateMessage);
+        setUserData({...userData,"connected": true});
+        stompClient.subscribe('/chatroom/public', onMessageReceived);
+        stompClient.subscribe('/user/'+userData.username+'/private', onPrivateMessage);
         userJoin();
     }
 
-    const userJoin = () => {
-        var chatMessage = {
+    const userJoin=()=>{
+          var chatMessage = {
             senderName: userData.username,
-            status: "JOIN"
-        };
-        stompClient.send("/ws/message", {}, JSON.stringify(chatMessage));
+            status:"JOIN"
+          };
+          stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
     }
 
-    const onMessageReceived = (payload) => {
+    const onMessageReceived = (payload)=>{
         var payloadData = JSON.parse(payload.body);
-        switch (payloadData.status) {
+        switch(payloadData.status){
             case "JOIN":
-                if (!privateChats.get(payloadData.senderName)) {
-                    privateChats.set(payloadData.senderName, []);
+                if(!privateChats.get(payloadData.senderName)){
+                    privateChats.set(payloadData.senderName,[]);
                     setPrivateChats(new Map(privateChats));
                 }
                 break;
             case "MESSAGE":
-                // publicChats.push(payloadData);
-                // setPublicChats([...publicChats]);
+                publicChats.push(payloadData);
+                setPublicChats([...publicChats]);
                 break;
         }
     }
-
+    
     const onPrivateMessage = (payload)=>{
         console.log(payload);
         var payloadData = JSON.parse(payload.body);
@@ -91,82 +97,51 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
         
     }
 
-    // const getData = (value) => {
-    //     var result = Object.values(value)
+    const handleMessage =(event)=>{
+        const {value}=event.target;
+        setUserData({...userData,"message": value});
+    }
+    const sendValue=()=>{
+            if (stompClient) {
+              var chatMessage = {
+                senderName: userData.username,
+                message: userData.message,
+                status:"MESSAGE"
+              };
+              console.log(chatMessage);
+              stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
+              setUserData({...userData,"message": ""});
+            }
+    }
 
-    //     var myData = Object.keys(value).map(key => {
-    //         return value[key];
-    //     })
+    const sendPrivateValue=()=>{
+        if (stompClient) {
+          var chatMessage = {
+            senderName: userData.username,
+            receiverName:tab,
+            message: userData.message,
+            status:"MESSAGE"
+          };
+          
+          if(userData.username !== tab){
+            privateChats.get(tab).push(chatMessage);
+            setPrivateChats(new Map(privateChats));
+          }
+          stompClient.send("/app/private-message", {}, JSON.stringify(chatMessage));
+          setUserData({...userData,"message": ""});
+        }
+    }
 
-    //     {Object.entries(value).map(([key,val]) => (
-    //         console.log( key + val)
-    //     ))}
+    const handleUsername=(event)=>{
+        const {value}=event.target;
+        setUserData({...userData,"username": value});
+    }
 
-    //     const lecture1 = result.lecture1;
-    //     const lecture2 = result.lecture2;
-    //     const lecture3 = result.lecture3;
-    //     const lecture4 = result.lecture4;
-    //     const lecture5 = result.lecture5;
-    //     const lecture6 = result.lecture6;
-    //     const lecture7 = result.lecture7;
-    //     const lecture8 = result.lecture8;
-    //     const lecture9 = result.lecture9;
-    //     const lecture10 = result.lecture10;
-    //     const lecture11 = result.lecture11;
-    //     const lecture12 = result.lecture12;
-    //     const lecture13 = result.lecture13;
-    //     const lecture14 = result.lecture14;
-    //     const lecture15 = result.lecture15;
-
-
-    //     // const listItems = numbers.map((number) =>
-    //     //     <li key={number.toString()}>
-    //     //     {number}
-    //     //     </li>
-    //     // );
-    //     console.log(myData)
-
-    //     const listItems = result.map((lecture1,lecture2,
-    //         lecture3,
-    //         lecture4,
-    //         lecture5,
-    //         lecture6,
-    //         lecture7,
-    //         lecture8,
-    //         lecture9,
-    //         lecture10,
-    //         lecture11,
-    //         lecture12,
-    //         lecture13,
-    //         lecture14,
-    //         lecture15
-    //         ) => 
-    //         <div>
-    //             <td>{lecture1}</td>
-    //             <td>{lecture2}</td>
-    //             <td>{lecture3}</td>
-    //             <td>{lecture4}</td>
-    //             <td>{lecture5}</td>
-    //             <td>{lecture6}</td>
-    //             <td>{lecture7}</td>
-    //             <td>{lecture8}</td>
-    //             <td>{lecture9}</td>
-    //             <td>{lecture10}</td>
-    //             <td>{lecture11}</td>
-    //             <td>{lecture12}</td>
-    //             <td>{lecture13}</td>
-    //             <td>{lecture14}</td>
-    //             <td>{lecture15}</td>
-    //         </div>
-    //         )
-    //     return (listItems)
-    // }
+    const registerUser=()=>{
+        connect();
+    }
 
     const setUpData = (selectedCourse) => {
-        // Object.keys(selectedCourse).forEach(function (key){
-        //     mapData.set(key,selectedCourse[key]);
-        // });
-        // setData(Array.from(mapData, ([userid, value]) => ({ userid, value })));
         setData(selectedCourse)
     }
 
@@ -174,8 +149,6 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
         if (selectedCourse != '{}' && selectedCourse != undefined) {
             setUpData(selectedCourse);
         }
-        // console.log(data)
-
     }, [selectedCourse])
 
 
