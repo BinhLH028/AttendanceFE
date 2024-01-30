@@ -31,7 +31,8 @@ function App() {
           <Route element={<PersistLogin />}>
             <Route path='/' element={<RequireAuth allowedRoles={["USER", "TEACHER"]} />}>
               <Route index element={<Home />} />
-
+              <Route path='attend-successfull/:name' index element={<AttendSuccess />}>
+              </Route>
               <Route path='cs/:id' element={<Home />} />
             </Route>
           </Route>
