@@ -8,6 +8,7 @@ import Modal from './Modal';
 import useAuth from "./hooks/useAuth";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 import "./../style/HomePanel.css";
+import { showErrorMessage } from '../util/toastdisplay';
 
 const Home = () => {
   const { auth } = useAuth();
@@ -24,10 +25,9 @@ const Home = () => {
   const axiosPrivate = useAxiosPrivate();
 
   var localSemesterData = JSON.parse(window.localStorage.getItem("listSemester"));
-  // var localCourseData = JSON.parse(window.localStorage.getItem("listCourse"));
 
   const getListSemester = async () => {
-    const response = await axiosPrivate.get("/section").catch(error => { console.log(error) });
+    const response = await axiosPrivate.get("/section").catch(error => { showErrorMessage(error) });
     const data = JSON.stringify(response.data.body);
     if (data != '{}') {
       window.localStorage.setItem('listSemester', data);
@@ -40,33 +40,12 @@ const Home = () => {
     }
   }
 
-  // const getListCourse = async () => {
-  //   var userId = auth.userData.userId;
-  //   // var role = 
-  //   const response = await axiosPrivate.get("/course_section").catch(error => { console.log(error) });
-  //   const data = JSON.stringify(response.data.body);
-  //   if (data != '{}') {
-  //     window.localStorage.setItem('listSemester', data);
-  //     localCourseData = JSON.parse(window.localStorage.getItem("listSemester"));
-  //   }
-  //   if (localCourseData != '{}') {
-  //     await setListCourse(localCourseData);
-  //     setIsLoading(true);
-  //   }
-  // }
-
   useEffect(() => {
     getListSemester();
-    // getListCourse();
   }, []);
 
   useEffect(() => {
-    // console.log(selectedSemester)
-  }, [selectedSemester])
-
-  useEffect(() => {
     setIsLoading(false);
-    // console.log(listSemester)
   }, [listSemester])
 
   if (isLoading) {
@@ -76,12 +55,8 @@ const Home = () => {
   return (
     <div className="HomePanel"
       style={{
-        // display: "flex",
-        // flexWrap: "nowrap",
-        // flexDirection: "row",
         width: "100%",
         height: "100%",
-        // alignItems: "start",
       }}>
       <Modal
         open={openModal}
@@ -90,11 +65,9 @@ const Home = () => {
         />
       <Leftpanel {...{ listSemester, selectedSemester, setSelectedCourse, setCurSC }} />
       <Routes>
-        <Route path="/cs/:id" render={(selectedCourse, curCS, setOpenModal, setModalData) => <RightPanel {...{ selectedCourse, curCS, setOpenModal, setModalData }} />} />
-        {/* <Route path="/cs/:id"  element={<RightPanel {...{selectedCourse, curCS, setOpenModal}}/>}></Route> */}
+        <Route path="/cs/:id" render={(selectedCourse, curCS, setOpenModal) => <RightPanel {...{ selectedCourse, curCS, setOpenModal }} />} />
       </Routes>
-      <RightPanel {...{ selectedCourse, curCS, setOpenModal, setModalData }} />
-
+      <RightPanel {...{ selectedCourse, curCS, setOpenModal }} />
     </div>
   )
 }

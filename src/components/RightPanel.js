@@ -7,6 +7,7 @@ import useAxiosPrivate from './hooks/useAxiosPrivate';
 import Modal from './Modal';
 
 import "./../style/RightPanel.css";
+import { showErrorMessage } from '../util/toastdisplay';
 
 var stompClient = null;
 const BASE_URL = 'http://localhost:8080/';

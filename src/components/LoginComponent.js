@@ -7,6 +7,7 @@ import "./style.css";
 import useRefreshToken from "./hooks/useRefreshToken";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import axios from "axios";
+import { showSuccessMessage } from "../util/toastdisplay";
 
 
 const USER_REGEX = /^[A-Za-z\s]{5,25}$/;
@@ -85,7 +86,7 @@ const LoginComponent = () => {
             email: email,
             password: password,
         });
-        const response = await httpClient.post("/user/authenticate", loginData)
+        const response = await httpClient.post("/user/authenticate", loginData);
         const accessToken = response.data.body.accessToken;
         const refreshToken = response.data.body.refreshToken;
         const userData = response.data.body.user;
