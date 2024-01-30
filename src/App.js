@@ -5,6 +5,7 @@ import LoginComponent from './components/LoginComponent';
 import RegisterComponent from './components/RegisterComponent';
 import Home from './components/Home';
 import RightPanel from './components/RightPanel';
+import AttendSuccess from './components/AttendSuccess';
 import PersistLogin from './components/PersistLogin';
 
 function App() {
@@ -16,6 +17,9 @@ function App() {
             <Route path='/' element={<RequireAuth allowedRoles={["USER", "TEACHER"]} />}>
               <Route index element={<Home />}>
                 {/* <Route path='/abc'  element={<RightPanel/>}/> */}
+              </Route>
+
+              <Route path='attend-successfull/:name' index element={<AttendSuccess />}>
               </Route>
 
               <Route path='cs/:id'>

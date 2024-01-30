@@ -14,6 +14,7 @@ const Home = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [modalData, setModalData] = useState("");
 
   const [listSemester, setListSemester] = useState([])
   const [selectedSemester, setSelectedSemester] = useState(listSemester[0])
@@ -84,13 +85,15 @@ const Home = () => {
       }}>
       <Modal
         open={openModal}
-        onClose={() => setOpenModal(false)} />
+        onClose={() => setOpenModal(false)} 
+        modalData= {modalData}
+        />
       <Leftpanel {...{ listSemester, selectedSemester, setSelectedCourse, setCurSC }} />
       <Routes>
-        <Route path="/cs/:id" render={(selectedCourse, curCS, setOpenModal) => <RightPanel {...{ selectedCourse, curCS, setOpenModal }} />} />
+        <Route path="/cs/:id" render={(selectedCourse, curCS, setOpenModal, setModalData) => <RightPanel {...{ selectedCourse, curCS, setOpenModal, setModalData }} />} />
         {/* <Route path="/cs/:id"  element={<RightPanel {...{selectedCourse, curCS, setOpenModal}}/>}></Route> */}
       </Routes>
-      <RightPanel {...{ selectedCourse, curCS, setOpenModal }} />
+      <RightPanel {...{ selectedCourse, curCS, setOpenModal, setModalData }} />
 
     </div>
   )

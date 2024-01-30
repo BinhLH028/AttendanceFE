@@ -10,136 +10,20 @@ import "./../style/RightPanel.css";
 
 var stompClient = null;
 const BASE_URL = 'http://localhost:8080/';
-const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
+const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData }) => {
 
     const client = new ClientJS();
 
     const { auth } = useAuth();
     const axiosPrivate = useAxiosPrivate();
-
-    const mapData = new Map();
+    const [privateChats, setPrivateChats] = useState(new Map());     
 
     const [isFectch, setIsFetch] = new useState(true);
-
-    //
-    const [privateChats, setPrivateChats] = useState(new Map());     
-    const [publicChats, setPublicChats] = useState([]); 
-    const [tab,setTab] =useState("CHATROOM");
-
-    const [userData, setUserData] = useState({
-        username: '',
-        receivername: '',
-        connected: false,
-        message: ''
-      });
-
-    useEffect(() => {
-      console.log(userData);
-    }, [userData]);
 
     const [data, setData] = new useState([])
 
     let i = 1;
 
-    const connect =()=>{
-        let Sock = new SockJS('http://localhost:8080/ws');
-        stompClient = over(Sock);
-        stompClient.connect({},onConnected, onError);
-    }
-
-    const onConnected = () => {
-        setUserData({...userData,"connected": true});
-        stompClient.subscribe('/chatroom/public', onMessageReceived);
-        stompClient.subscribe('/user/'+userData.username+'/private', onPrivateMessage);
-        userJoin();
-    }
-
-    const userJoin=()=>{
-          var chatMessage = {
-            senderName: userData.username,
-            status:"JOIN"
-          };
-          stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
-    }
-
-    const onMessageReceived = (payload)=>{
-        var payloadData = JSON.parse(payload.body);
-        switch(payloadData.status){
-            case "JOIN":
-                if(!privateChats.get(payloadData.senderName)){
-                    privateChats.set(payloadData.senderName,[]);
-                    setPrivateChats(new Map(privateChats));
-                }
-                break;
-            case "MESSAGE":
-                publicChats.push(payloadData);
-                setPublicChats([...publicChats]);
-                break;
-        }
-    }
-    
-    const onPrivateMessage = (payload)=>{
-        console.log(payload);
-        var payloadData = JSON.parse(payload.body);
-        if(privateChats.get(payloadData.senderName)){
-            privateChats.get(payloadData.senderName).push(payloadData);
-            setPrivateChats(new Map(privateChats));
-        }else{
-            let list =[];
-            list.push(payloadData);
-            privateChats.set(payloadData.senderName,list);
-            setPrivateChats(new Map(privateChats));
-        }
-    }
-
-    const onError = (err) => {
-        console.log(err);
-        
-    }
-
-    const handleMessage =(event)=>{
-        const {value}=event.target;
-        setUserData({...userData,"message": value});
-    }
-    const sendValue=()=>{
-            if (stompClient) {
-              var chatMessage = {
-                senderName: userData.username,
-                message: userData.message,
-                status:"MESSAGE"
-              };
-              console.log(chatMessage);
-              stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
-              setUserData({...userData,"message": ""});
-            }
-    }
-
-    const sendPrivateValue=()=>{
-        if (stompClient) {
-          var chatMessage = {
-            senderName: userData.username,
-            receiverName:tab,
-            message: userData.message,
-            status:"MESSAGE"
-          };
-          
-          if(userData.username !== tab){
-            privateChats.get(tab).push(chatMessage);
-            setPrivateChats(new Map(privateChats));
-          }
-          stompClient.send("/app/private-message", {}, JSON.stringify(chatMessage));
-          setUserData({...userData,"message": ""});
-        }
-    }
-
-    const handleUsername=(event)=>{
-        const {value}=event.target;
-        setUserData({...userData,"username": value});
-    }
-
-    const registerUser=()=>{
-        connect();
-    }
 
     const setUpData = (selectedCourse) => {
         setData(selectedCourse)
@@ -160,8 +44,10 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
 
     const createAttendanceSession = async () => {
         const response = await axiosPrivate.post("/attendance?cs=" + curCS).catch(error => { console.log(error) });
-        // console.log(client.getFingerprint())
+        setModalData(auth.userData.userName);
         setOpenModal(true);
+        connectSocket();
+
         return (
             <div id="abc"
                 style={{
@@ -174,6 +60,27 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal }) => {
             </div>
         );
     }
+
+    const connectSocket = () => {
+        var socket = new SockJS('http://localhost:8080/our-websocket');
+        stompClient = over(socket);
+        var headers = {
+            Authorization : 'Bearer ' + auth.accessToken,
+        };
+        stompClient.connect(headers, onConnected)
+    }
+
+    const onConnected = () => {
+        stompClient.subscribe('/user/topic/private-messages', onAttendRqRecv);
+    }
+
+    const onAttendRqRecv = (payload) =>{
+        console.log(payload);
+        console.log(JSON.parse(payload.body).content);
+    }
+    // function showMessage(message) {
+    //     $("#messages").append("<tr><td>" + message + "</td></tr>");
+    // };
 
     const saveAttendanceSession = () => {
 
