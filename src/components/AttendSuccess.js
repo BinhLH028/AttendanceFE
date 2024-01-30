@@ -20,7 +20,8 @@ const AttendSuccess = () => {
         var e = client.getPlugins();
         var f = client.getFonts();
         var g = client.getTimeZone();
-        // var h = client.getLanguage();
+        var h = client.getLanguage();
+        var i = client.getBrowser();
         let msg = JSON.stringify({
             messageContent: auth.userData.userId + ":" + client.getCustomFingerprint(c,d,e,f,g),
         });

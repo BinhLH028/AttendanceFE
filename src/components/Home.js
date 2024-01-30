@@ -65,9 +65,9 @@ const Home = () => {
         />
       <Leftpanel {...{ listSemester, selectedSemester, setSelectedCourse, setCurSC }} />
       <Routes>
-        <Route path="/cs/:id" render={(selectedCourse, curCS, setOpenModal) => <RightPanel {...{ selectedCourse, curCS, setOpenModal }} />} />
+        <Route path="/cs/:id" render={(selectedCourse, curCS, setOpenModal, setModalData) => <RightPanel {...{ selectedCourse, curCS, setOpenModal, setModalData }} />} />
       </Routes>
-      <RightPanel {...{ selectedCourse, curCS, setOpenModal }} />
+      <RightPanel {...{ selectedCourse, curCS, setOpenModal, setModalData }} />
     </div>
   )
 }

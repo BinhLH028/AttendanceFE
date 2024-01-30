@@ -8,6 +8,7 @@ import Modal from './Modal';
 
 import "./../style/RightPanel.css";
 import { showErrorMessage } from '../util/toastdisplay';
+import { text } from '@fortawesome/fontawesome-svg-core';
 
 var stompClient = null;
 const BASE_URL = 'http://localhost:8080/';
@@ -17,7 +18,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData }) => {
 
     const { auth } = useAuth();
     const axiosPrivate = useAxiosPrivate();
-    const [privateChats, setPrivateChats] = useState(new Map());     
+    const [attenData, setAttenData] = useState(new Map());     
 
     const [isFectch, setIsFetch] = new useState(true);
 
@@ -48,6 +49,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData }) => {
         setModalData(auth.userData.userName);
         setOpenModal(true);
         connectSocket();
+        setAttenData(new Map());
 
         return (
             <div id="abc"
@@ -78,13 +80,24 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData }) => {
     const onAttendRqRecv = (payload) =>{
         console.log(payload);
         console.log(JSON.parse(payload.body).content);
+        const msg = JSON.parse(payload.body).content.split(":");
+        attenData.set(msg[1],parseInt(msg[0]))
+        setAttenData(new Map(attenData));
+        for (let [key, value] of attenData) {
+            console.log(key + " : " + value);
+        }
+        
     }
     // function showMessage(message) {
     //     $("#messages").append("<tr><td>" + message + "</td></tr>");
     // };
 
-    const saveAttendanceSession = () => {
-
+    const saveAttendanceSession = async () => {
+        var attendSession = {
+            lectureNum : 8,
+            listStudentId : Array.from(attenData.values())
+        }
+        const response = await axiosPrivate.post("/attendance/save?cs=" + curCS, attendSession)
     }
 
     if (isFectch) return (
@@ -149,6 +162,10 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData }) => {
                     </table>
                 </div>
             </div>
+            {/* {attenData.map((key, val) => {
+                <span>{key}:{val}</span>
+            })} */}
+            
             {/* && client.isMobile() */}
             {["USER"].includes(auth.userData.role) &&
                 (

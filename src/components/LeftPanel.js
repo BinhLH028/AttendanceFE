@@ -163,12 +163,12 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                         <ul class="openbottom">
                             {listCourse.map(({ id, courseCode, courseName }) => (
                                 <li key={id}>
-                                    <NavLink
+                                    <Link
                                         to={{
                                             pathname: `/cs/${id}`,
                                         }}
                                         onClick={() => changeCourse(id)}>{courseCode}
-                                        </NavLink>
+                                        </Link>
                                 </li>
                             ))}
                         </ul>
