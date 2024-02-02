@@ -10,7 +10,7 @@ import useLogout from "./hooks/useLogout";
 import { showErrorMessage } from "../util/toastdisplay";
 
 
-const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC }) => {
+const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC, setIsShowTable }) => {
 
     var localCourseData = JSON.parse(window.localStorage.getItem("listCourse"));
     var localAttendanceData = JSON.parse(window.localStorage.getItem("attendanceData"));
@@ -60,6 +60,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
             }
             if (localCourseData != '{}') {
                 await setListCourse(localCourseData);
+                await setIsShowTable(false);
             }
         } catch(error) {
             console.log(error);
@@ -77,6 +78,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
             }
             if (localAttendanceData != '{}') {
                 await setSelectedCourse(localAttendanceData);
+                await setIsShowTable(true);
                 await setCurSC(id);
             }
         } catch(error) {

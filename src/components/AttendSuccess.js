@@ -1,5 +1,6 @@
 import React from 'react'
 import { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 import useAuth from "./hooks/useAuth";
 import { useParams } from 'react-router';
@@ -13,6 +14,12 @@ const AttendSuccess = () => {
     const axiosPrivate = useAxiosPrivate();
     const { auth } = useAuth();
 
+    const [isLoading, setIsLoading] = useState(true);
+
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/";
+
 
     useEffect(() => {
         var c = client.getOS();
@@ -22,15 +29,24 @@ const AttendSuccess = () => {
         var g = client.getTimeZone();
         var h = client.getLanguage();
         var i = client.getBrowser();
+        
         let msg = JSON.stringify({
-            messageContent: auth.userData.userId + ":" + client.getCustomFingerprint(c,d,e,f,g),
+            messageContent: auth.userData.userId + ":" + client.getCustomFingerprint(c, d, e, f, g),
         });
         var mobilecheck = client.isMobile();
         // if(mobilecheck == true) {
-            sendAttendRequest(params.name, msg);
+        sendAttendRequest(params.name, msg);
         // } else {
         //     //TODO: please use mobile device
         // }
+        const timeoutId = setTimeout(() => {
+            setIsLoading(false);
+            // Redirect to the main page after 2 seconds
+            navigate(from, { replace: true });
+          }, 2000);
+      
+          // Clear the timeout when the component unmounts or when the redirection occurs
+          return () => clearTimeout(timeoutId);
 
     }, []);
 
@@ -39,7 +55,9 @@ const AttendSuccess = () => {
     }
 
     return (
-        <div>AttendSuccess</div>
+        <div>
+            {isLoading && <div>Loading...</div>}
+        </div>
     )
 }
 

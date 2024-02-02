@@ -26,7 +26,7 @@
   
   .modalContainer {
     max-width: 600px;
-    width: 100%;
+    width: auto;
     position: fixed;
     top: 40%;
     left: 50%;
@@ -38,15 +38,12 @@
   }
   
   img {
-    width: 250px;
+    width: 500px;
     object-fit: cover;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    border-radius: 8px;
   }
   
-  .modalRight {
-    width: 100%;
-  }
+
   
   .closeBtn {
     position: fixed;

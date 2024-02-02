@@ -8,6 +8,9 @@ import useRefreshToken from "./hooks/useRefreshToken";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import axios from "axios";
 import { showSuccessMessage } from "../util/toastdisplay";
+import { toast } from "react-toastify";
+import { Bounce } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const USER_REGEX = /^[A-Za-z\s]{5,25}$/;
@@ -86,17 +89,54 @@ const LoginComponent = () => {
             email: email,
             password: password,
         });
-        const response = await httpClient.post("/user/authenticate", loginData);
-        const accessToken = response.data.body.accessToken;
-        const refreshToken = response.data.body.refreshToken;
-        const userData = response.data.body.user;
-        setAuth({ email, password, accessToken, refreshToken, userData });
-        localStorage.setItem('token', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        let response;
+        try {
+            console.log(typeof loginData.email)
+            response = await httpClient.post("/user/authenticate", loginData)
+        }
+        catch (error) {
+            if (loginData.email == undefined || loginData.password == undefined ) {
+                toast.error('Hãy nhập đủ tài khoản và mật khẩu', {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                    transition: Bounce,
+                });
+            } else {
+                toast.error('Sai tên đăng nhập hoặc mật khẩu', {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                    transition: Bounce,
+                });
+            }
+            
+        }
+        if (response) {
+            const accessToken = response.data.body.accessToken;
+            const refreshToken = response.data.body.refreshToken;
+            const userData = response.data.body.user;
+            setAuth({ email, password, accessToken, refreshToken, userData });
+            localStorage.setItem('token', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+
+            if (response.status === 200)
+                navigate(from, { replace: true });
+        }
+
         // console.log(response);
 
-        if (response.status === 200)
-        navigate(from, { replace: true });
+
     }
 
     const sendRegisterRequest = async (e) => {
@@ -121,20 +161,20 @@ const LoginComponent = () => {
                     <form>
                         <h1>Tạo Tài Khoản</h1>
                         <span>Sử dụng email sinh viên của bạn</span>
-                        <input type="text" placeholder="Name" 
+                        <input type="text" placeholder="Name"
                             value={user}
                             onChange={(e) => setUser(e.target.value)}
                         />
-                        <input type="email" placeholder="Email" 
+                        <input type="email" placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
-                        <input type="password" placeholder="Password" 
+                        <input type="password" placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
                         <button id="submit" type="button" disabled={!validName || !validPwd || !validMatch ? true : false}
-                        onClick={(e) => sendRegisterRequest()}>Đăng ký</button>
+                            onClick={(e) => sendRegisterRequest()}>Đăng ký</button>
                     </form>
                 </div>
                 <div class="form-container sign-in">
