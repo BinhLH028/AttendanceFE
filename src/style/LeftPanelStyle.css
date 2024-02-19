@@ -43,6 +43,8 @@ nav ul ul.openbottom {
     overflow-y: auto;
     padding-left: 10px;
     background-color: transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .active {

@@ -62,7 +62,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 await setListCourse(localCourseData);
                 await setIsShowTable(false);
             }
-        } catch(error) {
+        } catch (error) {
             console.log(error);
         }
     }
@@ -81,7 +81,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 await setIsShowTable(true);
                 await setCurSC(id);
             }
-        } catch(error) {
+        } catch (error) {
             console.log(error);
         }
     }
@@ -170,16 +170,27 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                                             pathname: `/cs/${id}`,
                                         }}
                                         onClick={() => changeCourse(id)}>{courseCode}
-                                        </Link>
+                                    </Link>
                                 </li>
                             ))}
                         </ul>
                     </li>
                 </ul>
             </nav>
-            <div style={{ height: '5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <PoweroffOutlined style={{ fontSize: '2rem', cursor: 'pointer' }} onClick={handleLogout} />
+            <div className="bottom"
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '100%'
+                }}
+            >
+                <div style={{ backgroundColor: "black", height: '5rem',  }}>
+                </div>
+                <div style={{ height: '5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    <PoweroffOutlined style={{ fontSize: '2rem', cursor: 'pointer' }} onClick={handleLogout} />
+                </div>
             </div>
+
         </div>
     )
 }
