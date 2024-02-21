@@ -9,6 +9,7 @@ import Home from './components/Home';
 import RightPanel from './components/RightPanel';
 import AttendSuccess from './components/AttendSuccess';
 import PersistLogin from './components/PersistLogin';
+import AddCourse from './components/AddCourse';
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
               <Route path='attend-successfull/:name' index element={<AttendSuccess />}>
               </Route>
               <Route path='cs/:id' element={<Home />} />
+              <Route path='course' element={<Home> <AddCourse/> </Home>} />
+              <Route path='add/semester' element={<Home />} />
             </Route>
           </Route>
 

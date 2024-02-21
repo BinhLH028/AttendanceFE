@@ -8,7 +8,27 @@ import useAxiosPrivate from './hooks/useAxiosPrivate';
 import { PoweroffOutlined } from '@ant-design/icons';
 import useLogout from "./hooks/useLogout";
 import { showErrorMessage } from "../util/toastdisplay";
+import { Menu } from "antd";
+import { AppstoreOutlined, MailOutlined, SettingOutlined } from '@ant-design/icons';
 
+function getItem(label, key, icon, children, type) {
+    return {
+        key,
+        icon,
+        children,
+        label,
+        type,
+    };
+}
+
+const items = [
+    getItem('Thêm', 'sub1', undefined, [
+        getItem(<Link to={'/course'}>Khóa học</Link>, '1'),
+        getItem(<Link to={'/add/semester'}>Học kì</Link>, '2')
+    ])
+];
+
+const rootSubmenuKeys = ['sub1', 'sub2', 'sub4'];
 
 const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC, setIsShowTable }) => {
 
@@ -24,6 +44,8 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
 
     const [listCourse, setListCourse] = useState([{}]);
+
+    const [openKeys, setOpenKeys] = useState(['sub1']);
 
     const temp = [];
 
@@ -62,7 +84,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 await setListCourse(localCourseData);
                 await setIsShowTable(false);
             }
-        } catch(error) {
+        } catch (error) {
             console.log(error);
         }
     }
@@ -81,7 +103,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 await setIsShowTable(true);
                 await setCurSC(id);
             }
-        } catch(error) {
+        } catch (error) {
             console.log(error);
         }
     }
@@ -129,6 +151,19 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
         navigate("/login", { replace: true });
     }
 
+    const onOpenChange = (keys) => {
+        const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
+        if (latestOpenKey && rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+            setOpenKeys(keys);
+        } else {
+            setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
+        }
+    };
+
+    const onClick = (e) => {
+
+    }
+
     return (
         <div class="leftpanel"
             style={{
@@ -145,38 +180,55 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 background: "linear-gradient(to bottom, rgb(0, 82, 212), rgb(67, 100, 247), rgb(111, 177, 252))",
                 boxShadow: "3px 7px 10px rgba(0,0,0,.5)"
             }}>
-            <nav
-                style={{
-                    width: "100%",
-                }}>
-                <ul>
-                    <li class="dropdown">
-                        <a id="semester" href="#">Học Kỳ</a>
-                        <ul class="openright">
-                            {listSemester.map(({ sectionId, semester, year }) => (
-                                <li key={sectionId}>
-                                    <Link onClick={() => changeSemester(sectionId, semester, year)}>{semester} năm {year}</Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#">Danh Sách Lớp Môn Học</a>
-                        <ul class="openbottom">
-                            {listCourse.map(({ id, courseCode, courseName }) => (
-                                <li key={id}>
-                                    <Link
-                                        to={{
-                                            pathname: `/cs/${id}`,
-                                        }}
-                                        onClick={() => changeCourse(id)}>{courseCode}
+            <div style={{ width: '100%' }}>
+                <nav
+                    style={{
+                        width: "100%",
+                    }}>
+                    <ul>
+                        <li class="dropdown">
+                            <a id="semester" href="#">Học Kỳ</a>
+                            <ul class="openright">
+                                {listSemester.map(({ sectionId, semester, year }) => (
+                                    <li key={sectionId}>
+                                        <Link onClick={() => changeSemester(sectionId, semester, year)}>{semester} năm {year}</Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#">Danh Sách Lớp Môn Học</a>
+                            <ul class="openbottom">
+                                {listCourse.map(({ id, courseCode, courseName }) => (
+                                    <li key={id}>
+                                        <Link
+                                            to={{
+                                                pathname: `/cs/${id}`,
+                                            }}
+                                            onClick={() => changeCourse(id)}>{courseCode}
                                         </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+                <Menu
+                    onClick={onClick}
+                    mode="inline"
+                    openKeys={openKeys}
+                    onOpenChange={onOpenChange}
+                    style={{
+                        // width: 256,
+                        backgroundColor: 'inherit',
+                        color: 'white',
+                        // paddingTop: '3rem',
+                        paddingLeft: '0'
+                    }}
+                    items={items}
+                />
+            </div>
             <div style={{ height: '5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <PoweroffOutlined style={{ fontSize: '2rem', cursor: 'pointer' }} onClick={handleLogout} />
             </div>
