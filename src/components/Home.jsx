@@ -10,7 +10,7 @@ import useAxiosPrivate from './hooks/useAxiosPrivate';
 import "./../style/HomePanel.css";
 import { showErrorMessage } from '../util/toastdisplay';
 
-const Home = () => {
+const Home = ({ children }) => {
   const { auth } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -61,15 +61,26 @@ const Home = () => {
       }}>
       <Modal
         open={openModal}
-        onClose={() => setOpenModal(false)} 
-        modalData= {modalData}
-        />
+        onClose={() => setOpenModal(false)}
+        modalData={modalData}
+      />
       <Leftpanel {...{ listSemester, selectedSemester, setSelectedCourse, setCurSC, setIsShowTable }} />
       <Routes>
         <Route path="/cs/:id" render={(selectedCourse, curCS, setOpenModal, setModalData, isShowTable) => <RightPanel {...{ selectedCourse, curCS, setOpenModal, setModalData, isShowTable }} />} />
       </Routes>
-      <RightPanel {...{ selectedCourse, curCS, setOpenModal, setModalData, isShowTable }} />
-    </div>
+      {isShowTable === true ?
+        <RightPanel
+          {...{ selectedCourse, curCS, setOpenModal, setModalData, isShowTable }}>
+        </RightPanel> : <div style={{
+          height: '100vh',
+          display: 'flex',
+          left: '0px',
+          flexDirection: 'column',
+          justifyContent: 'right',
+          background: 'transparent',
+          padding: '20px 0px 0px 10rem',
+        }}>{children}</div>}
+    </div >
   )
 }
 
