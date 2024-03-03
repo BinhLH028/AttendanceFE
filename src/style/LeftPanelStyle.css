@@ -59,3 +59,12 @@ nav ul .dropdown:active  ul.openbottom  {
     display: block;
     position: initial;
 }
+
+.ant-menu-submenu-title {
+    padding-left: 10px !important;
+    color: white !important;
+}
+
+.ant-menu-item {
+    padding-left: 15px !important;
+}

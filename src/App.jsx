@@ -10,6 +10,7 @@ import RightPanel from './components/RightPanel';
 import AttendSuccess from './components/AttendSuccess';
 import PersistLogin from './components/PersistLogin';
 import AddCourse from './components/AddCourse';
+import AddSemester from './components/AddSemester';
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
               </Route>
               <Route path='cs/:id' element={<Home />} />
               <Route path='course' element={<Home> <AddCourse/> </Home>} />
-              <Route path='add/semester' element={<Home />} />
+              <Route path='semester' element={<Home> <AddSemester/> </Home>} />
             </Route>
           </Route>
 

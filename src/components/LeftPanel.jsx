@@ -24,7 +24,7 @@ function getItem(label, key, icon, children, type) {
 const items = [
     getItem('Thêm', 'sub1', undefined, [
         getItem(<Link to={'/course'}>Khóa học</Link>, '1'),
-        getItem(<Link to={'/add/semester'}>Học kì</Link>, '2')
+        getItem(<Link to={'/semester'}>Học kì</Link>, '2')
     ])
 ];
 
@@ -45,7 +45,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
     const [listCourse, setListCourse] = useState([{}]);
 
-    const [openKeys, setOpenKeys] = useState(['sub1']);
+    const [openKeys, setOpenKeys] = useState([]);
 
     const temp = [];
 
