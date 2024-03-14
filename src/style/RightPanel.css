@@ -48,7 +48,7 @@ tbody tr td:first-of-type {
   position: sticky;
   left: -1px;
   text-align: left;
-}
+} */
 
 .btn {
   cursor: pointer;
@@ -64,4 +64,4 @@ tbody tr td:first-of-type {
 .btn:hover {
   background-color: rgb(82, 14, 240);
   color: white;
-} */
+}

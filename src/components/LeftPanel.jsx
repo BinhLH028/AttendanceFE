@@ -223,7 +223,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                         // width: 256,
                         backgroundColor: 'inherit',
                         color: 'white',
-                        // paddingTop: '3rem',
+                        paddingTop: '5rem',
                         paddingLeft: '0'
                     }}
                     items={items}
