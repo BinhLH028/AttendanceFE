@@ -6,6 +6,7 @@ import useAuth from "./hooks/useAuth";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 import Form from 'react-bootstrap/Form';
 import Modal from './Modal';
+import { DataGrid } from '@mui/x-data-grid';
 
 import "./../style/RightPanel.css";
 import { toast } from "react-toastify";
@@ -13,7 +14,6 @@ import { Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 var stompClient = null;
-const BASE_URL = 'http://localhost:8080/';
 const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowTable }) => {
 
     const client = new ClientJS();
@@ -27,18 +27,24 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     const [data, setData] = new useState([]);
     const [lecture, setLecture] = new useState(1);
 
+    const [rows, setRows] = new useState([]);
+    const [columns, setColumns] = new useState([]);
+    const [editedCell, setEditedCell] = useState(null);
+
 
 
     let i = 1;
-    let j = 1;
+    // let j = 1;
+    // var rows;
+    // var columns;
 
 
-    const setUpData = (selectedCourse) => {
+    const setUpData = async (selectedCourse) => {
         setData(selectedCourse)
         console.log(data)
 
-        var GridRowsProp = data.map(({ userId, userCode, userName, dob, attendanceSheet }) => ({
-            id: j++,
+        await setRows(selectedCourse.map(({ userId, userCode, userName, dob, attendanceSheet }) => ({
+            id: i++,
             col1: userCode,
             col2: userName,
             col3: dob,
@@ -57,9 +63,30 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             col16: attendanceSheet.lecture13,
             col17: attendanceSheet.lecture14,
             col18: attendanceSheet.lecture15,
-        }));
+        })));
 
-        console.log(GridRowsProp)
+        console.log(rows)
+
+        setColumns([
+            { field: 'col1', headerName: 'Mã SV', width: 150 },
+            { field: 'col2', headerName: 'Họ và tên', width: 150 },
+            { field: 'col3', headerName: 'Ngày sinh', width: 150 },
+            { field: 'col4', headerName: 'lecture 1', width: 150, type: 'boolean', editable: true },
+            { field: 'col5', headerName: 'lecture 2', width: 150, type: 'boolean', editable: true },
+            { field: 'col6', headerName: 'lecture 3', width: 150, type: 'boolean', editable: true },
+            { field: 'col7', headerName: 'lecture 4', width: 150, type: 'boolean', editable: true },
+            { field: 'col8', headerName: 'lecture 5', width: 150, type: 'boolean', editable: true },
+            { field: 'col9', headerName: 'lecture 6', width: 150, type: 'boolean', editable: true },
+            { field: 'col10', headerName: 'lecture 7', width: 150, type: 'boolean', editable: true },
+            { field: 'col11', headerName: 'lecture 8', width: 150, type: 'boolean', editable: true },
+            { field: 'col12', headerName: 'lecture 9', width: 150, type: 'boolean', editable: true },
+            { field: 'col13', headerName: 'lecture 10', width: 150, type: 'boolean', editable: true },
+            { field: 'col14', headerName: 'lecture 11', width: 150, type: 'boolean', editable: true },
+            { field: 'col15', headerName: 'lecture 12', width: 150, type: 'boolean', editable: true },
+            { field: 'col16', headerName: 'lecture 13', width: 150, type: 'boolean', editable: true },
+            { field: 'col17', headerName: 'lecture 14', width: 150, type: 'boolean', editable: true },
+            { field: 'col18', headerName: 'lecture 15', width: 150, type: 'boolean', editable: true },
+        ]);
     }
 
     useEffect(() => {
@@ -73,7 +100,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
         if (selectedCourse != '[]' && selectedCourse != undefined) {
             setIsFetch(false)
         }
-    }, [data])
+    }, [data, rows])
 
     const createAttendanceSession = async () => {
         try {
@@ -179,126 +206,107 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
         }
     }
 
-    if (isFectch) return (
-        <div>dang load</div>
-    )
+    const onCellEditCommit = (params) => {
+        // params contains information about the edited cell
+        console.log('Edited Cell:', params);
+    
+        // Access the entire row using params.row
+        console.log('Entire Row:', params.row);
+    
+        // Store the edited cell for further use if needed
+        setEditedCell(params);
+      };
 
-    return (
-        <div class="RightPanel" style={{
-            height: "100vh",
-            // width: "120rem",
-            display: "flex",
-            left: "0",
-            // flex: "0 0 87%",
-            flexDirection: "column",
-            justifyContent: "right",
-            alignItems: "",
-            background: "transparent",
-            padding: "20px 0 0 10rem"
-        }}>
-            {(isShowTable === true) ? (
-                <div>
-                    <div class="table">
-                        <div class="table-wrapper" style={{ minWidth: '80%' }}>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>STT</th>
-                                        <th>Mã SV</th>
-                                        <th>Họ và tên</th>
-                                        <th>Ngày sinh</th>
-                                        <th>1</th>
-                                        <th>2</th>
-                                        <th>3</th>
-                                        <th>4</th>
-                                        <th>5</th>
-                                        <th>6</th>
-                                        <th>7</th>
-                                        <th>8</th>
-                                        <th>9</th>
-                                        <th>10</th>
-                                        <th>11</th>
-                                        <th>12</th>
-                                        <th>13</th>
-                                        <th>14</th>
-                                        <th>15</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.map(({ userId, userCode, userName, dob, attendanceSheet }) => (
-                                        <tr key={userId}>
-                                            <td>{i++}</td>
-                                            <td>{userCode}</td>
-                                            <td>{userName}</td>
-                                            <td>{dob}</td>
-                                            {Object.entries(attendanceSheet).map(([key, val]) => (
-                                                <td key={key}>{val ? 'có' : 'vắng'}</td>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+        if (isFectch) return (
+            <div>dang load</div>
+        )
+
+        return (
+            <div class="RightPanel" style={{
+                height: "100vh",
+                // width: "120rem",
+                display: "flex",
+                left: "0",
+                // flex: "0 0 87%",
+                flexDirection: "column",
+                justifyContent: "right",
+                alignItems: "",
+                background: "transparent",
+                padding: "20px 0 0 10rem"
+            }}>
+                {(isShowTable === true) ? (
+                    <div>
+                        <div style={{
+                            height: "auto",
+                            width: '98%',
+                            backgroundColor: 'rgba(230, 230, 230, 0.5)',
+                            border: 'solid lightgray 1px'
+                        }}>
+                            <DataGrid
+                                rows={rows}
+                                columns={columns}
+                                pageSizeOptions={[]}
+                                onCellEditCommit={onCellEditCommit} />
                         </div>
+
+                        {/* && client.isMobile() */}
+                        {["USER"].includes(auth.userData.role) &&
+                            (
+                                <div className='btn_wrapper'
+                                    style={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        justifyContent: "center",
+                                        position: "absolute",
+                                        bottom: "50px",
+                                        marginLeft: "4.5rem"
+                                    }}>
+                                    <div className='btn'
+                                        style={{}} onClick={() => createAttendanceSession()}>
+                                        <span>Tạo Phiên Điểm Danh   </span>
+                                        <Form.Select aria-label="Default select example" onClick={(e) => handleClickPropagation(e)} onChange={handleSelectChange}>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                            <option value="8">8</option>
+                                            <option value="9">9</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                            <option value="13">13</option>
+                                            <option value="14">14</option>
+                                            <option value="15">15</option>
+                                        </Form.Select>
+                                    </div>
+                                    <div className='btn'
+                                        style={{}} onClick={() => createAttendanceSession()}>
+                                        <span>Chỉnh Sửa</span>
+                                    </div>
+                                    <div className='btn'
+                                        style={{}} onClick={() => saveAttendanceSession()}>
+                                        <span>Lưu phiên</span>
+                                    </div>
+                                </div>
+                            )}
                     </div>
+                ) : (<div></div>)}
 
-                    {/* && client.isMobile() */}
-                    {["USER"].includes(auth.userData.role) &&
-                        (
-                            <div className='btn_wrapper'
-                                style={{
-                                    display: "flex",
-                                    flexDirection: "row",
-                                    justifyContent: "center",
-                                    position: "absolute",
-                                    bottom: "50px",
-                                    marginLeft: "4.5rem"
-                                }}>
-                                <div className='btn'
-                                    style={{}} onClick={() => createAttendanceSession()}>
-                                    <span>Tạo Phiên Điểm Danh   </span>
-                                    <Form.Select aria-label="Default select example" onClick={(e) => handleClickPropagation(e)} onChange={handleSelectChange}>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                        <option value="11">11</option>
-                                        <option value="12">12</option>
-                                        <option value="13">13</option>
-                                        <option value="14">14</option>
-                                        <option value="15">15</option>
-                                    </Form.Select>
-                                </div>
-                                <div className='btn'
-                                    style={{}} onClick={() => createAttendanceSession()}>
-                                    <span>Chỉnh Sửa</span>
-                                </div>
-                                <div className='btn'
-                                    style={{}} onClick={() => saveAttendanceSession()}>
-                                    <span>Lưu phiên</span>
-                                </div>
-                            </div>
-                        )}
-                </div>
-            ) : (<div></div>)}
+            </div>
+        )
+    }
 
-        </div>
-    )
-}
+    export default RightPanel
 
-export default RightPanel
-
-// {/* {["USER"].includes(auth.userData.role) && 
-//                 (<div className='btn' 
+// {/* {["USER"].includes(auth.userData.role) &&
+//                 (<div className='btn'
 //                     style={{position:"absolute",
 //                     bottom:"50px"}} onClick={() => checkAttendance()}>
 //                     <span>Điểm Danh</span>
 //                 </div>)} */}
-//             {/* <Modal 
-//                 open={openModal} 
+//             {/* <Modal
+//                 open={openModal}
 //                 onClose={() => setOpenModal(false)} /> */}

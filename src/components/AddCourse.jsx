@@ -147,17 +147,18 @@ const AddCourse = () => {
     };
 
     function isFieldsTouched() {
-        return form1.isFieldTouched('semester') && form1.isFieldTouched('startYear') && form1.isFieldTouched('endYear');
+        return form1.isFieldTouched('semester') && form1.isFieldTouched('startYear');
     }
 
     const getCourses = async () => {
         try {
-            const response = await axiosPrivate.get("/course");
+            // setLoading(true);
+            const response = await axiosPrivate.get("/course/all");
             let courseList = response.data.body.map(course => {
                 return { ...course, value: course.courseId, label: course.courseCode }
             });
             setCourseList(courseList);
-            console.log(courseList);
+            // console.log(response);
         } catch (error) {
             // console.log(error);
             showErrorMessage(error);
@@ -227,25 +228,26 @@ const AddCourse = () => {
 
     const fetchStudentList = async (courseId) => {
         try {
-            // Check if student list for this course is already cached
-            if (studentList[courseId]) {
-                // If cached, set the student list from cache
-                return studentList[courseId];
-            } else {
-                // If not cached, fetch student list from server
-                const response = await axiosPrivate.get(`/student`, { params: { courseId: courseId } });
-                const students = response.data.body.map((student, index) => {
-                    return { ...student, dob: student.dob.substring(0, 10), no: index + 1 };
-                });
-                console.log(students);
-                // Cache the student list for this course
-                setStudentList({ ...studentList, [courseId]: students });
-
-                return students;
-            }
+          // Check if student list for this course is already cached
+          if (studentList[courseId]) {
+            // If cached, set the student list from cache
+            return studentList[courseId];
+          } else {
+            // If not cached, fetch student list from server
+            const response = await axiosPrivate.get(`/student_enrolled`, { params: { id: courseId } });
+            // const students = response.data.body.map((student, index) => {
+            //     return { ...student, dob: student.dob.substring(0, 10), no: index + 1 };
+            // });
+            const students = response.data;
+            console.log(students);
+            // Cache the student list for this course
+            setStudentList({ ...studentList, [courseId]: students });
+    
+            return students;
+          }
         } catch (error) {
-            console.error('Error fetching student list:', error);
-            return [];
+              console.error('Error fetching student list:', error);
+              return [];
         }
     };
 
@@ -425,7 +427,7 @@ const AddCourse = () => {
                                     },
                                 ]}
                             >
-                                <Input />
+                                <Input type="number"/>
                             </Form.Item>
                             <span
                                 style={{
@@ -435,9 +437,9 @@ const AddCourse = () => {
                                     textAlign: 'center',
                                 }}
                             >
-                                -
+                                {/* - */}
                             </span>
-                            <Form.Item
+                            {/* <Form.Item
                                 name="endYear"
                                 style={{
                                     display: 'inline-block',
@@ -452,7 +454,7 @@ const AddCourse = () => {
                                 ]}
                             >
                                 <Input />
-                            </Form.Item>
+                            </Form.Item> */}
                         </Form.Item>
 
                         <Form.Item
