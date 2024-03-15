@@ -1,8 +1,13 @@
-import { Button, Form, Input, Select, Table } from "antd";
+import { Button, Form, Input, Select, Space, Table } from "antd";
 import { useEffect, useState } from "react";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
 import AddStudentModal from "./AddStudentModal";
+import { DownOutlined } from "@ant-design/icons";
+
+const { Option } = Select;
+
+const MAX_COUNT = 5;
 
 const AddCourse = () => {
     const axiosPrivate = useAxiosPrivate();
@@ -11,7 +16,14 @@ const AddCourse = () => {
 
     const [form2] = Form.useForm();
 
+    const [form3] = Form.useForm();
+
     const columns = [
+        {
+            title: 'No.',
+            dataIndex: 'no',
+            key: 'no',
+        },
         {
             title: 'Mã lớp học',
             dataIndex: 'courseCode',
@@ -58,7 +70,11 @@ const AddCourse = () => {
 
     const [showModal, setShowModal] = useState(false);
 
-    let courseList = [];
+    let courseSectionList = [];
+
+    const [courseList, setCourseList] = useState([]);
+
+    const [sectionList, setSectionList] = useState([]);
 
     const [studentList, setStudentList] = useState({});
 
@@ -71,31 +87,63 @@ const AddCourse = () => {
         },
     });
 
+    const [shouldUpdate, setShouldUpdate] = useState(false);
+
+    const [value, setValue] = useState([]);
+
+    const suffix = (
+        <>
+            <span>
+                {value.length} / {MAX_COUNT}
+            </span>
+            <DownOutlined />
+        </>
+    );
+
     const onCourseFinish = async (values) => {
         try {
             const response = await axiosPrivate.post("/course/new", values);
-            console.log(response);
+            // console.log(response);
             if (response.status === 200) {
                 showSuccessMessage('Tạo khóa học thành công!')
             }
+            form2.resetFields();
+            setShouldUpdate(true);
+        } catch (error) {
+            // console.log(error);
+            showErrorMessage(error);
+        }
+    };
+
+    const onSectionFinish = async (values) => {
+        try {
+            const response = await axiosPrivate.post("/section/new", values);
+            // console.log(response);
+            if (response.status === 200) {
+                showSuccessMessage('Tạo học kì thành công!')
+            }
+            form1.resetFields();
+            setShouldUpdate(true);
         } catch (error) {
             console.log(error);
             showErrorMessage(error);
         }
     };
 
-    const onSectionFinish = async (values) => {
-        console.log(values);
-        // try {
-        //     const response = await axiosPrivate.post("/section/new", values);
-        //     console.log(response);
-        //     if (response.status === 200) {
-        //         showSuccessMessage('Tạo học kì thành công!')
-        //     }
-        // } catch (error) {
-        //     console.log(error);
-        //     showErrorMessage(error);
-        // }
+    const onCourseSectionFinish = async (values) => {
+        try {
+            console.log(values);
+            const response = await axiosPrivate.post("/course_section/new", values);
+            // console.log(response);
+            if (response.status === 200) {
+                showSuccessMessage('Thêm lớp học vào học kì thành công!')
+            }
+            form3.resetFields();
+            setShouldUpdate(true);
+        } catch (error) {
+            // console.log(error);
+            showErrorMessage(error);
+        }
     };
 
     function isFieldsTouched() {
@@ -104,11 +152,14 @@ const AddCourse = () => {
 
     const getCourses = async () => {
         try {
-            // setLoading(true);
             const response = await axiosPrivate.get("/course");
-            console.log(response);
+            let courseList = response.data.body.map(course => {
+                return { ...course, value: course.courseId, label: course.courseCode }
+            });
+            setCourseList(courseList);
+            console.log(courseList);
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             showErrorMessage(error);
         }
     };
@@ -124,22 +175,23 @@ const AddCourse = () => {
         setShowModal(false);
     };
 
-    // const getSections = async () => {
-    //     try {
-    //         const response = await axiosPrivate.get("/section");
-    //         console.log(response);
-    //     } catch (error) {
-    //         console.log(error);
-    //         showErrorMessage(error);
-    //     }
-    // };
+    const getSections = async () => {
+        try {
+            const response = await axiosPrivate.get("/section");
+            console.log(response.data.body);
+            setSectionList(response.data.body);
+        } catch (error) {
+            console.log(error);
+            showErrorMessage(error);
+        }
+    };
 
     const getCourseSections = async () => {
         try {
             const response = await axiosPrivate.get("/course_section");
             if (response)
                 response.data.body
-                    .map(res => {
+                    .map((res, index) => {
                         const courseSection = {};
                         const flatten = (source, prefix = '') => {
                             for (const key in source) {
@@ -151,12 +203,11 @@ const AddCourse = () => {
                             }
                         };
                         flatten(res);
-                        courseList.push(courseSection);
+                        courseSectionList.push({ ...courseSection, no: index + 1 });
                     });
-            setTableData(courseList);
-            console.log(courseList);
+            setTableData(courseSectionList);
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             showErrorMessage(error);
         }
     };
@@ -176,37 +227,47 @@ const AddCourse = () => {
 
     const fetchStudentList = async (courseId) => {
         try {
-          // Check if student list for this course is already cached
-          if (studentList[courseId]) {
-            // If cached, set the student list from cache
-            return studentList[courseId];
-          } else {
-            // If not cached, fetch student list from server
-            const response = await axiosPrivate.get(`/student_enrolled`, { params: { id: courseId } });
-            const students = response.data;
-            console.log(students);
-            // Cache the student list for this course
-            setStudentList({ ...studentList, [courseId]: students });
-    
-            return students;
-          }
+            // Check if student list for this course is already cached
+            if (studentList[courseId]) {
+                // If cached, set the student list from cache
+                return studentList[courseId];
+            } else {
+                // If not cached, fetch student list from server
+                const response = await axiosPrivate.get(`/student`, { params: { courseId: courseId } });
+                const students = response.data.body.map((student, index) => {
+                    return { ...student, dob: student.dob.substring(0, 10), no: index + 1 };
+                });
+                console.log(students);
+                // Cache the student list for this course
+                setStudentList({ ...studentList, [courseId]: students });
+
+                return students;
+            }
         } catch (error) {
-          console.error('Error fetching student list:', error);
-          return [];
+            console.error('Error fetching student list:', error);
+            return [];
         }
-      };
+    };
 
     useEffect(() => {
         getCourses();
-        // getSections();
-
+        getSections();
         getCourseSections();
     }, [])
+
+    useEffect(() => {
+        if (shouldUpdate) {
+            getCourses();
+            getSections();
+            getCourseSections();
+            setShouldUpdate(false); // Reset shouldUpdate after fetching data
+        }
+    }, [shouldUpdate]);
 
     return (
         <>
             <div
-                className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
+                className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-11">
                 <div className="w-full md:col-start-2 md:col-span-3 rounded-xl bg-gray-50 p-4">
                     <Form
                         labelCol={{
@@ -216,7 +277,103 @@ const AddCourse = () => {
                             span: 16,
                         }}
                         style={{
-                            width: '25rem',
+                            width: '21rem',
+                            maxWidth: 600,
+                            paddingRight: '2rem'
+                        }}
+                        initialValues={{
+                            remember: true,
+                        }}
+                        onFinish={onCourseSectionFinish}
+                        autoComplete="off"
+                        form={form3}
+                    >
+                        <Form.Item
+                            label="Năm học - Học kì"
+                            name="sectionId"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Chọn ít nhất 1 năm học!',
+                                },
+                            ]}
+                        >
+                            <Select allowClear >
+                                {sectionList.map(section => {
+                                    return <Option key={section.courseId} value={section.sectionId}>Học kì {section.semester} - Năm {section.year}</Option>
+                                })}
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            name="courseIds"
+                            label="Lớp học"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Chọn ít nhất 1 lớp học!',
+                                },
+                            ]}
+                        >
+                            {/* <Select allowClear >
+                                {courseList.map(course => {
+                                    return <Select.Option value={course.courseId}>{course.courseName}</Select.Option>
+                                })}
+                            </Select> */}
+                            <Select
+                                mode="multiple"
+                                maxCount={MAX_COUNT}
+                                onChange={setValue}
+                                suffixIcon={suffix}
+                                style={{
+                                    width: '100%',
+                                }}
+                                optionLabelProp="label"
+                                options={courseList}
+                                optionRender={(course) => (
+                                    <Space>
+                                        <span role="img" aria-label={course.data.courseCode}>
+                                            {course.data.courseCode}
+                                        </span>
+                                        {course.data.courseName}
+                                    </Space>
+                                )}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            wrapperCol={{
+                                offset: 8,
+                                span: 16,
+                            }}
+                            shouldUpdate
+                        >
+                            {() => (
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    disabled={
+                                        !form3.isFieldsTouched(true) ||
+                                        form3.getFieldsError().filter(({ errors }) => errors.length)
+                                            .length > 0
+                                    }
+                                    className="bg-[#1677ff]">
+                                    Submit
+                                </Button>
+                            )}
+                        </Form.Item>
+                    </Form>
+                </div>
+                <div className="w-full md:col-start-5 md:col-span-3 rounded-xl bg-gray-50 p-4">
+                    <Form
+                        labelCol={{
+                            span: 8,
+                        }}
+                        wrapperCol={{
+                            span: 16,
+                        }}
+                        style={{
+                            width: '21rem',
                             maxWidth: 600,
                             paddingRight: '2rem'
                         }}
@@ -259,6 +416,7 @@ const AddCourse = () => {
                                 style={{
                                     display: 'inline-block',
                                     width: 'calc(50% - 12px)',
+                                    margin: 0
                                 }}
                                 rules={[
                                     {
@@ -284,6 +442,7 @@ const AddCourse = () => {
                                 style={{
                                     display: 'inline-block',
                                     width: 'calc(50% - 12px)',
+                                    margin: 0
                                 }}
                                 rules={[
                                     {
@@ -319,7 +478,7 @@ const AddCourse = () => {
                         </Form.Item>
                     </Form>
                 </div>
-                <div className="w-full md:col-start-5 md:col-span-3 rounded-xl bg-gray-50 p-4">
+                <div className="w-full md:col-start-8 md:col-span-3 rounded-xl bg-gray-50 p-4">
                     <Form
                         labelCol={{
                             span: 8,
@@ -328,7 +487,7 @@ const AddCourse = () => {
                             span: 16,
                         }}
                         style={{
-                            width: '25rem',
+                            width: '21rem',
                             maxWidth: 600,
                             paddingRight: '2rem'
                         }}
@@ -346,6 +505,7 @@ const AddCourse = () => {
                                 {
                                     required: true,
                                     message: 'Mã lớp học không được trống!',
+                                    pattern: '^[A-Za-z]{3}\d{4}\s[A-Za-z]{1,2}$',
                                 },
                             ]}
                         >
@@ -403,7 +563,8 @@ const AddCourse = () => {
                 </div>
             </div>
             <AddStudentModal
-                data={studentList}
+                selectedCourse={selectedCourse}
+                studentList={studentList}
                 show={showModal}
                 onClose={handleCloseModalDetail}
             />

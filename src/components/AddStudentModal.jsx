@@ -6,22 +6,27 @@ import { Descriptions, Table } from "antd";
 import "../style/Modal.css"
 import { useState } from "react";
 
-function AddStudentModal({ data, show, onClose }) {
+function AddStudentModal({ studentList, show, onClose, selectedCourse }) {
     const columns = [
         {
-            title: 'Mã lớp học',
-            dataIndex: 'courseCode',
-            key: 'courseCode',
+            title: 'No.',
+            dataIndex: 'no',
+            key: 'no',
         },
         {
-            title: 'Tên lớp học',
-            dataIndex: 'courseName',
-            key: 'courseName',
+            title: 'Tên sinh viên',
+            dataIndex: 'userName',
+            key: 'userName',
         },
         {
-            title: 'Giảng viên',
-            dataIndex: '',
-            key: '',
+            title: 'Ngày sinh',
+            dataIndex: 'dob',
+            key: 'dob',
+        },
+        {
+            title: 'Giới tính',
+            dataIndex: 'gender',
+            key: 'gender',
         },
         {
             title: 'Năm học',
@@ -34,44 +39,6 @@ function AddStudentModal({ data, show, onClose }) {
             key: 'semester',
         },
     ];
-
-    const [tableData, setTableData] = useState([
-        {
-            key: 1,
-            name: 'John Brown',
-            age: 32,
-            address: 'New York No. 1 Lake Park',
-            description: 'My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.',
-        },
-        {
-            key: 2,
-            name: 'Jim Green',
-            age: 42,
-            address: 'London No. 1 Lake Park',
-            description: 'My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park.',
-        },
-        {
-            key: 3,
-            name: 'Not Expandable',
-            age: 29,
-            address: 'Jiangsu No. 1 Lake Park',
-            description: 'This not expandable',
-        },
-        {
-            key: 4,
-            name: 'Joe Black',
-            age: 32,
-            address: 'Sydney No. 1 Lake Park',
-            description: 'My name is Joe Black, I am 32 years old, living in Sydney No. 1 Lake Park.',
-        },
-        {
-            key: 4,
-            name: 'Joe Black',
-            age: 32,
-            address: 'Sydney No. 1 Lake Park',
-            description: 'My name is Joe Black, I am 32 years old, living in Sydney No. 1 Lake Park.',
-        },
-    ]);
 
     const tableFooter = () => {
         return (
@@ -96,7 +63,7 @@ function AddStudentModal({ data, show, onClose }) {
                 <Modal.Body>
                     <Table
                         columns={columns}
-                        dataSource={tableData}
+                        dataSource={studentList[selectedCourse]}
                         footer={() => 'Footer'} />
                 </Modal.Body>
                 <Modal.Footer>
