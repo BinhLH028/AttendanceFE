@@ -70,7 +70,7 @@ body{
     cursor: pointer;
 }
 
-.container button.hidden{
+.container button.hide{
     background-color: transparent;
     border-color: #fff;
 }

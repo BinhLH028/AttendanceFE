@@ -201,12 +201,12 @@ const LoginComponent = () => {
                         <div class="toggle-panel toggle-left">
                             <h1>Đã có tài khoản</h1>
                             <p>Đăng nhập để thực hiện điểm danh môn học</p>
-                            <button class="hidden" id="login" onClick={onClickSignIn}>ĐĂNG NHẬP</button>
+                            <button class="hide" id="login" onClick={onClickSignIn}>ĐĂNG NHẬP</button>
                         </div>
                         <div class="toggle-panel toggle-right">
                             <h1>Chưa Có Tài Khoản</h1>
                             <p>Đăng ký ngay với email sinh viên của bạn</p>
-                            <button class="hidden" id="register" onClick={onClickSignUp}>ĐĂNG KÝ</button>
+                            <button class="hide" id="register" onClick={onClickSignUp}>ĐĂNG KÝ</button>
                         </div>
                     </div>
                 </div>
