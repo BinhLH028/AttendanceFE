@@ -300,13 +300,3 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     }
 
     export default RightPanel
-
-// {/* {["USER"].includes(auth.userData.role) &&
-//                 (<div className='btn'
-//                     style={{position:"absolute",
-//                     bottom:"50px"}} onClick={() => checkAttendance()}>
-//                     <span>Điểm Danh</span>
-//                 </div>)} */}
-//             {/* <Modal
-//                 open={openModal}
-//                 onClose={() => setOpenModal(false)} /> */}
