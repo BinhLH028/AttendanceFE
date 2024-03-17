@@ -63,7 +63,7 @@ function AddStudentModal({ studentList, show, onClose, selectedCourse }) {
                 <Modal.Body>
                     <Table
                         columns={columns}
-                        dataSource={studentList[selectedCourse]}
+                        dataSource={studentList !== null && studentList[selectedCourse]}
                         footer={() => 'Footer'} />
                 </Modal.Body>
                 <Modal.Footer>
