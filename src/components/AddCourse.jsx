@@ -186,7 +186,7 @@ const AddCourse = () => {
   const [courseSectiontableParams, setCourseSectionTableParams] = useState({
     pagination: {
       current: 1,
-      pageSize: 3,
+      pageSize: 5,
     },
   });
 
@@ -276,19 +276,20 @@ const AddCourse = () => {
             }
           };
           flatten(res);
-          if (res.teacherName.length <= 1)
-            courseSection = {
-              ...courseSection,
-              teacherList: res.teacherName[0].userName,
-            };
-          else {
-            res.teacherName.reduce((acc, teacher) => {
-              courseSection = {
-                ...courseSection,
-                teacherList: acc["userName"] + ", " + teacher.userName,
-              };
-            });
+          let teacherList = '';
+          if (res.teacherName.length <= 1) {
+            teacherList = res.teacherName[0].userName
+          } else {
+            teacherList = res.teacherName.reduce((acc, teacher) => {
+              return acc + ', ' + teacher.userName;
+            }, '');
+            // console.log(teacherList);
+            teacherList = teacherList.slice(1, teacherList.length);
           }
+          courseSection = {
+            ...courseSection,
+            teacherList
+          };
           courseList.push(courseSection);
         });
       setCourseSectionTableData(courseList);
@@ -726,7 +727,7 @@ const AddCourse = () => {
         </div>
       </div>
 
-      <AddTeacherModal
+      <AddStudentModal
         studentList={teacherList}
         show={showModal}
         onClose={handleCloseModalDetail}
