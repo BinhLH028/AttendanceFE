@@ -189,7 +189,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                         <li class="dropdown">
                             <a id="semester" href="#">Học Kỳ</a>
                             <ul class="openright">
-                                {listSemester.map(({ sectionId, semester, year }) => (
+                                {listSemester !== null && listSemester.map(({ sectionId, semester, year }) => (
                                     <li key={sectionId}>
                                         <Link onClick={() => changeSemester(sectionId, semester, year)}>{semester} năm {year}</Link>
                                     </li>
@@ -199,7 +199,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                         <li class="dropdown">
                             <a href="#">Danh Sách Lớp Môn Học</a>
                             <ul class="openbottom">
-                                {listCourse.map(({ id, courseCode, courseName }) => (
+                                {listCourse !== null && listCourse.map(({ id, courseCode, courseName }) => (
                                     <li key={id}>
                                         <Link
                                             to={{
