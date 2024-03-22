@@ -2,7 +2,7 @@ import { Button, Form, Input, InputNumber, Select, Table } from "antd";
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
-import AddStudentModal from "./AddStudentModal";
+import AddTeacherModal from "./AddTeacherModal";
 import { DataGrid } from "@mui/x-data-grid";
 
 const { Option } = Select;
@@ -109,7 +109,7 @@ const AddCourse = () => {
             type="primary"
             shape="circle"
             className="bg-[#1677ff]"
-            onClick={() => handleShowAddStudentModal(course)}
+            onClick={() => handleShowAddTeacherModal(course)}
           >
             +
           </Button>
@@ -156,7 +156,7 @@ const AddCourse = () => {
             type="primary"
             shape="circle"
             className="bg-[#1677ff]"
-            onClick={() => handleShowAddStudentModal(course)}
+            onClick={() => handleShowAddTeacherModal(course)}
           >
             +
           </Button>
@@ -168,13 +168,13 @@ const AddCourse = () => {
 
   const [courseSectionTableData, setCourseSectionTableData] = useState([]);
 
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedCourseSection, setSelectedCourseSection] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
 
   let courseList = [];
 
-  const [studentList, setStudentList] = useState({});
+  const [courseSectionTeacherList, setCourseSectionTeacherList] = useState({});
 
   const [teacherList, setTeacherList] = useState([]);
 
@@ -199,7 +199,7 @@ const AddCourse = () => {
 
   const [shouldUpdate, setShouldUpdate] = useState(true);
 
-  const [value, setValue] = useState([]);
+  const [value, setValue] = useState(1);
 
   const [loadings, setLoadings] = useState([]);
 
@@ -237,7 +237,7 @@ const AddCourse = () => {
     try {
       const response = await axiosPrivate.get("/section");
       if (response) {
-        setTeacherList(response.data.body);
+        // setCourseSectionTeacherList(response.data.body);
         var listData = [];
         response.data.body.map((res) => {
           listData.push({
@@ -255,11 +255,12 @@ const AddCourse = () => {
     }
   };
 
-  const getCourseSections = async () => {
+  const getCourseSections = async (value = 1) => {
+    setCourseSectionTableData([]);
     setCourseSectionTableLoading(true);
     try {
       const response = await axiosPrivate.get(
-        `/course_section/1?page=${
+        `/course_section/${value}?page=${
           courseSectiontableParams.pagination.current - 1
         }`
       );
@@ -276,19 +277,19 @@ const AddCourse = () => {
             }
           };
           flatten(res);
-          let teacherList = '';
+          let teacherList = "";
           if (res.teacherName.length <= 1) {
-            teacherList = res.teacherName[0].userName
+            teacherList = res.teacherName[0].userName;
           } else {
             teacherList = res.teacherName.reduce((acc, teacher) => {
-              return acc + ', ' + teacher.userName;
-            }, '');
+              return acc + ", " + teacher.userName;
+            }, "");
             // console.log(teacherList);
             teacherList = teacherList.slice(1, teacherList.length);
           }
           courseSection = {
             ...courseSection,
-            teacherList
+            teacherList,
           };
           courseList.push(courseSection);
         });
@@ -367,11 +368,11 @@ const AddCourse = () => {
     );
   }
 
-  const handleShowAddStudentModal = async (course) => {
-    setSelectedCourse(course.courseId);
+  const handleShowAddTeacherModal = async (course) => {
+    // setCourseSectionTeacherList({});
+    setSelectedCourseSection(course.id);
     setShowModal(true);
-
-    await fetchStudentList(course.courseId);
+    await fetchTeacherList(course.id);
   };
 
   const handleCloseModalDetail = () => {
@@ -414,29 +415,32 @@ const AddCourse = () => {
     }
   };
 
-  const fetchStudentList = async (courseId) => {
+  const fetchTeacherList = async (courseId) => {
     try {
       // Check if student list for this course is already cached
-      if (studentList[courseId]) {
+      if (courseSectionTeacherList[courseId]) {
         // If cached, set the student list from cache
-        return studentList[courseId];
+        return courseSectionTeacherList[courseId];
       } else {
         // If not cached, fetch student list from server
-        const response = await axiosPrivate.get(`/student`, {
-          params: { courseId: courseId },
+        const response = await axiosPrivate.get(`/teacher_teach`, {
+          params: { id: courseId },
         });
-        const students = response.data.body.map((student, index) => {
+
+        const teachers = response.data.map((teacher, index) => {
           return {
-            ...student,
-            dob: student.dob.substring(0, 10),
+            ...teacher,
+            dob: teacher.dob.substring(0, 10),
             no: index + 1,
           };
         });
-        console.log(students);
         // Cache the student list for this course
-        setStudentList({ ...studentList, [courseId]: students });
 
-        return students;
+        setCourseSectionTeacherList({ ...courseSectionTeacherList, [courseId]: teachers });
+
+        // console.log(CourseSectionTeacherList);
+
+        return teachers;
       }
     } catch (error) {
       console.error("Error fetching student list:", error);
@@ -445,7 +449,9 @@ const AddCourse = () => {
   };
 
   const handleChange = (value) => {
-    setUpData();
+    // setUpData();
+    // console.log(value);
+    setValue(value);
   };
 
   const onCellEditCommit = (params) => {
@@ -464,15 +470,15 @@ const AddCourse = () => {
       getCourses();
       getSections();
       // setUpData();
-      getCourseSections();
+      getCourseSections(value);
       getTeachers();
       setShouldUpdate(false); // Reset shouldUpdate after fetching data
     }
-  }, [shouldUpdate]);
+  }, [shouldUpdate, value]);
 
   useEffect(() => {
-    getCourseSections();
-  }, [JSON.stringify(courseSectiontableParams)]);
+    getCourseSections(value);
+  }, [JSON.stringify(courseSectiontableParams), value]);
 
   return (
     <>
@@ -727,11 +733,13 @@ const AddCourse = () => {
         </div>
       </div>
 
-      <AddStudentModal
-        studentList={teacherList}
+      <AddTeacherModal
+        teacherList={teacherList}
+        courseSectionTeacherList={courseSectionTeacherList}
         show={showModal}
         onClose={handleCloseModalDetail}
-        selectedCourse={selectedCourse}
+        selectedCourse={selectedCourseSection}
+        setCourseSectionTeacherList={setCourseSectionTeacherList}
       />
 
       {/* <AddTeacherModal
