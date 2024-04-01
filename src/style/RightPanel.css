@@ -9,12 +9,7 @@
   padding-right: 4.5rem;
 }
 
-@media  only screen and (max-width: 600px) {
-  .table {
-    padding-left: 0;
-    width: 250%;
-  }
-}
+
 
   
 table {
@@ -50,7 +45,14 @@ tbody tr td:first-of-type {
   text-align: left;
 } */
 
-.btn {
+@media  only screen and (max-width: 600px) {
+  .table {
+    padding-left: 0;
+    width: 250%;
+  }
+}
+
+.button {
   cursor: pointer;
   background-color: rgb(92, 193, 226);
   margin-left: 20px;
@@ -61,7 +63,7 @@ tbody tr td:first-of-type {
   overflow:hidden;
 }
 
-.btn:hover {
+.button:hover {
   background-color: rgb(82, 14, 240);
   color: white;
 }

@@ -1,11 +1,9 @@
-import { Button, Form, Input, InputNumber, Select, Table } from "antd";
+import { Button, Form, Input, InputNumber, Select, Table, message, Upload } from "antd";
+import { UploadOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
 import AddTeacherModal from "./AddTeacherModal";
-import { DataGrid } from "@mui/x-data-grid";
-
-const { Option } = Select;
 
 const MAX_COUNT = 5;
 
@@ -19,61 +17,6 @@ const AddCourse = () => {
   const [teacherOptions, setTeacherOptions] = useState([]);
 
   const [sectionOptions, setSectionOptions] = useState([]);
-
-  // #region table course section
-  const [rowsCS, setRowsCS] = new useState([]);
-  const [columnsCS, setColumnsCS] = new useState([]);
-
-  // const setUpData = async (selectedCourse) => {
-  //     setData(selectedCourse)
-  //     console.log(data)
-
-  //     await setRows(selectedCourse.map(({ userId, userCode, userName, dob, attendanceSheet }) => ({
-  //         id: i++,
-  //         col1: userCode,
-  //         col2: userName,
-  //         col3: dob,
-  //         col4: attendanceSheet.lecture1,
-  //         col5: attendanceSheet.lecture2,
-  //         col6: attendanceSheet.lecture3,
-  //         col7: attendanceSheet.lecture4,
-  //         col8: attendanceSheet.lecture5,
-  //         col9: attendanceSheet.lecture6,
-  //         col10: attendanceSheet.lecture7,
-  //         col11: attendanceSheet.lecture8,
-  //         col12: attendanceSheet.lecture9,
-  //         col13: attendanceSheet.lecture10,
-  //         col14: attendanceSheet.lecture11,
-  //         col15: attendanceSheet.lecture12,
-  //         col16: attendanceSheet.lecture13,
-  //         col17: attendanceSheet.lecture14,
-  //         col18: attendanceSheet.lecture15,
-  //     })));
-
-  //     console.log(rows)
-
-  //     setColumns([
-  //         { field: 'col1', headerName: 'Mã SV', width: 150 },
-  //         { field: 'col2', headerName: 'Họ và tên', width: 150 },
-  //         { field: 'col3', headerName: 'Ngày sinh', width: 150 },
-  //         { field: 'col4', headerName: 'lecture 1', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col5', headerName: 'lecture 2', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col6', headerName: 'lecture 3', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col7', headerName: 'lecture 4', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col8', headerName: 'lecture 5', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col9', headerName: 'lecture 6', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col10', headerName: 'lecture 7', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col11', headerName: 'lecture 8', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col12', headerName: 'lecture 9', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col13', headerName: 'lecture 10', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col14', headerName: 'lecture 11', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col15', headerName: 'lecture 12', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col16', headerName: 'lecture 13', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col17', headerName: 'lecture 14', width: 150, type: 'boolean', editable: true },
-  //         { field: 'col18', headerName: 'lecture 15', width: 150, type: 'boolean', editable: true },
-  //     ]);
-  // }
-  // #endregion
 
   const courseTableColumns = [
     {
@@ -91,16 +34,6 @@ const AddCourse = () => {
       dataIndex: "courseName",
       key: "courseName",
     },
-    // {
-    //     title: 'Năm học',
-    //     dataIndex: 'year',
-    //     key: 'year',
-    // },
-    // {
-    //     title: 'Học kì',
-    //     dataIndex: 'semester',
-    //     key: 'semester',
-    // },
     {
       title: "Action",
       render: (_, course) =>
@@ -138,16 +71,6 @@ const AddCourse = () => {
       dataIndex: "teacherList",
       key: "teacherList",
     },
-    // {
-    //     title: 'Năm học',
-    //     dataIndex: 'year',
-    //     key: 'year',
-    // },
-    // {
-    //     title: 'Học kì',
-    //     dataIndex: 'semester',
-    //     key: 'semester',
-    // },
     {
       title: "Action",
       render: (_, course) =>
@@ -186,7 +109,7 @@ const AddCourse = () => {
   const [courseSectiontableParams, setCourseSectionTableParams] = useState({
     pagination: {
       current: 1,
-      pageSize: 5,
+      pageSize: 10,
     },
   });
 
@@ -202,6 +125,112 @@ const AddCourse = () => {
   const [value, setValue] = useState(1);
 
   const [loadings, setLoadings] = useState([]);
+
+  function isJSONString(str) {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  const uploadCourses = async ({ file, onSuccess, onError }) => {
+    // Create a FormData object to hold the file and additional parameter
+    const formData = new FormData();
+    formData.append('file', file); // Append the file
+    try {
+      // Simulate API call to upload file with additional parameter
+      const response = await axiosPrivate.post('/course/upload', formData, {
+        headers: {
+          "Custom-Header": "value",
+          "Content-type": "multipart/form-data",
+        }
+      });
+
+      console.log(response.data); // Log response data
+      if (response.status === 200) {
+        showSuccessMessage(response.data);
+        setShouldUpdate(true); // reload UI
+        onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
+      } else {
+        console.log(response.data.body + " binh");
+        showErrorMessage(response.data.body);
+        onError(new Error('Upload failed')); // Call onError callback provided by Ant Design Upload component
+      }
+    } catch (error) {
+      console.log(error.request.response);
+      if (isJSONString(error.request.response)) {
+        const temp = JSON.parse(error.request.response);
+        showErrorMessage(temp.join("\n"));
+      } else {
+        showErrorMessage(error.request.response);
+      }
+      onError(error); // Call onError callback provided by Ant Design Upload component
+    }
+  };
+
+  const propsCourse = {
+    beforeUpload: (file) => {
+      const isCSV = file.name.toLowerCase().endsWith('.csv');
+      if (!isCSV) {
+        message.error(`${file.name} không đúng định dạng CSV `);
+      }
+      return isCSV || Upload.LIST_IGNORE;
+    },
+    multiple: false,
+    customRequest: uploadCourses
+  };
+
+  const uploadCoursesSection = async ({ file, onSuccess, onError }) => {
+    // Create a FormData object to hold the file and additional parameter
+    const formData = new FormData();
+    formData.append('file', file); // Append the file
+    formData.append('sectionId', value)
+    try {
+      // Simulate API call to upload file with additional parameter
+      const response = await axiosPrivate.post('/course_section/upload', formData, {
+        headers: {
+          "Custom-Header": "value",
+          "Content-type": "multipart/form-data",
+        }
+      });
+
+      console.log(response.data); // Log response data
+      if (response.status === 200) {
+        showSuccessMessage(response.data);
+        setShouldUpdate(true); // reload UI
+        onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
+      } else {
+        console.log(response.data.body + " binh");
+        showErrorMessage(response.data.body);
+        onError(new Error('Upload failed')); // Call onError callback provided by Ant Design Upload component
+      }
+    } catch (error) {
+      console.log(error.request.response);
+      if (isJSONString(error.request.response)) {
+        const temp = JSON.parse(error.request.response);
+        showErrorMessage(temp.join("\n"));
+      } else {
+        showErrorMessage(error.request.response);
+      }
+      onError(error); // Call onError callback provided by Ant Design Upload component
+    }
+  };
+
+  const propsCourseSection = {
+    beforeUpload: (file) => {
+      const isCSV = file.name.toLowerCase().endsWith('.csv');
+      if (!isCSV) {
+        message.error(`${file.name} không đúng định dạng CSV `);
+      }
+      return isCSV || Upload.LIST_IGNORE;
+    },
+    multiple: false,
+    customRequest: uploadCoursesSection
+  };
+
+
 
   const enterLoading = (index) => {
     setLoadings((prevLoadings) => {
@@ -260,8 +289,7 @@ const AddCourse = () => {
     setCourseSectionTableLoading(true);
     try {
       const response = await axiosPrivate.get(
-        `/course_section/${value}?page=${
-          courseSectiontableParams.pagination.current - 1
+        `/course_section/${value}?page=${courseSectiontableParams.pagination.current - 1
         }`
       );
       if (response)
@@ -349,7 +377,6 @@ const AddCourse = () => {
   const onSectionFinish = async (values) => {
     try {
       const response = await axiosPrivate.post("/section/new", values);
-      // console.log(response);
       if (response.status === 200) {
         showSuccessMessage("Tạo học kì thành công!");
       }
@@ -364,7 +391,7 @@ const AddCourse = () => {
 
   function isFieldsTouched() {
     return (
-      form1.isFieldTouched("semester") && form1.isFieldTouched("startYear")
+      form1.isFieldTouched("semester") && form1.isFieldTouched("year")
     );
   }
 
@@ -378,16 +405,6 @@ const AddCourse = () => {
   const handleCloseModalDetail = () => {
     setShowModal(false);
   };
-
-  // const getSections = async () => {
-  //     try {
-  //         const response = await axiosPrivate.get("/section");
-  //         console.log(response);
-  //     } catch (error) {
-  //         console.log(error);
-  //         showErrorMessage(error);
-  //     }
-  // };
 
   const handleCourseSectionTableChange = (pagination, filters, sorter) => {
     setCourseSectionTableParams({
@@ -449,8 +466,6 @@ const AddCourse = () => {
   };
 
   const handleChange = (value) => {
-    // setUpData();
-    // console.log(value);
     setValue(value);
   };
 
@@ -522,7 +537,7 @@ const AddCourse = () => {
 
             <Form.Item
               name="year"
-              label="Năm học"
+              label="year"
               rules={[
                 {
                   required: true,
@@ -535,31 +550,6 @@ const AddCourse = () => {
                 min={0}
                 max={new Date().getFullYear()}
               />
-              {/* <span
-                style={{
-                  display: "inline-block",
-                  width: "24px",
-                  lineHeight: "32px",
-                  textAlign: "center",
-                }}
-              >
-                -
-              </span>
-              <Form.Item
-                                name="endYear"
-                                style={{
-                                    display: 'inline-block',
-                                    width: 'calc(50% - 12px)',
-                                }}
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: '',
-                                    },
-                                ]}
-                            >
-                                <Input />
-                            </Form.Item> */}
             </Form.Item>
 
             <Form.Item
@@ -642,28 +632,6 @@ const AddCourse = () => {
                 <Input />
               </Form.Item>
 
-              {/* <Form.Item
-                label="Giảng viên"
-                name="Teacher"
-                rules={[
-                  {
-                    required: true,
-                    message: "chưa có Giảng viên!",
-                  },
-                ]}
-              >
-                <Select
-                  mode="multiple"
-                  allowClear
-                  style={{
-                    width: "100%",
-                  }}
-                  placeholder="Please select"
-                  onChange={handleChange}
-                  options={teacherOptions}
-                />
-              </Form.Item> */}
-
               <Form.Item
                 wrapperCol={{
                   offset: 8,
@@ -690,7 +658,13 @@ const AddCourse = () => {
                 )}
               </Form.Item>
             </Form>
-            <p>Dach sách lớp môn học</p>
+
+            <div>
+              <p style={{ whiteSpace: "pre-wrap", display: "inline-block", marginRight: "20px" }}>Danh sách lớp môn học</p>
+              <Upload {...propsCourse} style={{ display: "inline-block" }}>
+                <Button icon={<UploadOutlined />}>Upload danh sách môn học</Button>
+              </Upload>
+            </div>
 
             <Table
               columns={courseTableColumns}
@@ -715,6 +689,9 @@ const AddCourse = () => {
             onChange={handleChange}
             options={sectionOptions}
           />
+          <Upload {...propsCourseSection} style={{ display: "inline-block" }}>
+            <Button icon={<UploadOutlined />}>Upload danh sách LMH</Button>
+          </Upload>
 
           <Table
             columns={courseSectionTableColumns}
@@ -724,30 +701,18 @@ const AddCourse = () => {
             onChange={handleCourseSectionTableChange}
             rowKey={(record) => record.id}
           />
-
-          {/* <DataGrid
-                        rows={rowsCS}
-                        columns={columnsCS}
-                        pageSizeOptions={[]}
-                        onCellEditCommit={onCellEditCommit} /> */}
         </div>
       </div>
 
       <AddTeacherModal
         teacherList={teacherList}
-        courseSectionTeacherList={courseSectionTeacherList}
         show={showModal}
         onClose={handleCloseModalDetail}
         selectedCourse={selectedCourseSection}
+        courseSectionTeacherList={courseSectionTeacherList}
         setCourseSectionTeacherList={setCourseSectionTeacherList}
       />
 
-      {/* <AddTeacherModal
-        studentList={studentList}
-        show={showModal}
-        onClose={handleCloseModalDetail}
-        selectedCourse={selectedCourse}
-      /> */}
     </>
   );
 };

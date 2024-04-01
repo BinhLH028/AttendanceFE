@@ -209,94 +209,107 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     const onCellEditCommit = (params) => {
         // params contains information about the edited cell
         console.log('Edited Cell:', params);
-    
+
         // Access the entire row using params.row
         console.log('Entire Row:', params.row);
-    
+
         // Store the edited cell for further use if needed
         setEditedCell(params);
-      };
+    };
 
-        if (isFectch) return (
-            <div>dang load</div>
-        )
+    if (isFectch) return (
+        <div>dang load</div>
+    )
 
-        return (
-            <div class="RightPanel" style={{
-                height: "100vh",
-                // width: "120rem",
-                display: "flex",
-                left: "0",
-                // flex: "0 0 87%",
-                flexDirection: "column",
-                justifyContent: "right",
-                alignItems: "",
-                background: "transparent",
-                padding: "20px 0 0 10rem"
-            }}>
-                {(isShowTable === true) ? (
-                    <div>
-                        <div style={{
-                            height: "auto",
-                            width: '98%',
-                            backgroundColor: 'rgba(230, 230, 230, 0.5)',
-                            border: 'solid lightgray 1px'
-                        }}>
-                            <DataGrid
-                                rows={rows}
-                                columns={columns}
-                                pageSizeOptions={[]}
-                                onCellEditCommit={onCellEditCommit} />
-                        </div>
-
-                        {/* && client.isMobile() */}
-                        {["USER"].includes(auth.userData.role) &&
-                            (
-                                <div className='btn_wrapper'
-                                    style={{
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        justifyContent: "center",
-                                        position: "absolute",
-                                        bottom: "50px",
-                                        marginLeft: "4.5rem"
-                                    }}>
-                                    <div className='btn'
-                                        style={{}} onClick={() => createAttendanceSession()}>
-                                        <span>Tạo Phiên Điểm Danh   </span>
-                                        <Form.Select aria-label="Default select example" onClick={(e) => handleClickPropagation(e)} onChange={handleSelectChange}>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                            <option value="6">6</option>
-                                            <option value="7">7</option>
-                                            <option value="8">8</option>
-                                            <option value="9">9</option>
-                                            <option value="10">10</option>
-                                            <option value="11">11</option>
-                                            <option value="12">12</option>
-                                            <option value="13">13</option>
-                                            <option value="14">14</option>
-                                            <option value="15">15</option>
-                                        </Form.Select>
-                                    </div>
-                                    <div className='btn'
-                                        style={{}} onClick={() => createAttendanceSession()}>
-                                        <span>Chỉnh Sửa</span>
-                                    </div>
-                                    <div className='btn'
-                                        style={{}} onClick={() => saveAttendanceSession()}>
-                                        <span>Lưu phiên</span>
-                                    </div>
-                                </div>
-                            )}
+    return (
+        <div class="RightPanel" style={{
+            height: "100vh",
+            // width: "120rem",
+            display: "flex",
+            left: "0",
+            // flex: "0 0 87%",
+            flexDirection: "column",
+            justifyContent: "right",
+            alignItems: "",
+            background: "transparent",
+            padding: "20px 0 0 10rem"
+        }}>
+            {(isShowTable === true) ? (
+                <div>
+                    <div style={{
+                        height: "auto",
+                        width: '98%',
+                        backgroundColor: 'rgba(230, 230, 230, 0.5)',
+                        border: 'solid lightgray 1px'
+                    }}>
+                        <DataGrid
+                            rows={rows}
+                            columns={columns}
+                            pageSizeOptions={[]}
+                            onCellEditCommit={onCellEditCommit} />
                     </div>
-                ) : (<div></div>)}
 
-            </div>
-        )
-    }
+                    {/* && client.isMobile() */}
+                    {["TEACHER"].includes(auth.userData.role) &&
+                        (
+                            <div className='button_wrapper'
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "center",
+                                    position: "absolute",
+                                    bottom: "50px",
+                                    marginLeft: "4.5rem"
+                                }}>
+                                <div className='button'
+                                    style={{}} onClick={() => createAttendanceSession()}>
+                                    <span style={{
+                                        fontFamily:"Aria",
+                                        fontSize:"large"
+                                    }}>Tạo Phiên Điểm Danh   </span>
+                                    <Form.Select style={{
+                                        display:"inline-block",
+                                        height:"35px"
+                                    }} 
+                                        aria-label="Default select example" onClick={(e) => handleClickPropagation(e)} onChange={handleSelectChange}>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                    </Form.Select>
+                                </div>
+                                <div className='button'
+                                    style={{
+                                        fontFamily:"Aria",
+                                        fontSize:"large"
+                                    }} onClick={() => createAttendanceSession()}>
+                                    <span>Chỉnh Sửa</span>
+                                </div>
+                                <div className='button'
+                                    style={{
+                                        fontFamily:"Aria",
+                                        fontSize:"large"
+                                    }} onClick={() => saveAttendanceSession()}>
+                                    <span>Lưu phiên</span>
+                                </div>
+                            </div>
+                        )}
+                </div>
+            ) : (<div></div>)}
 
-    export default RightPanel
+        </div>
+    )
+}
+
+export default RightPanel

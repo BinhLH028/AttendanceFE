@@ -22,9 +22,22 @@ function getItem(label, key, icon, children, type) {
 }
 
 const items = [
-    getItem('Thêm', 'sub1', undefined, [
-        getItem(<Link to={'/course'}>Khóa học</Link>, '1'),
-        getItem(<Link to={'/semester'}>Học kì</Link>, '2')
+    getItem('QUẢN LÝ', 'sub1', undefined, [
+        getItem(<Link
+            style={{
+                fontFamily: "Arial",
+                fontSize: "medium",
+                textDecoration: "none"
+            }}
+            to={'/course'}>Khóa học</Link>, '1'),
+
+        getItem(<Link
+            style={{
+                fontFamily: "Arial",
+                fontSize: "medium",
+                textDecoration: "none"
+            }}
+            to={'/semester'}>LMH</Link>, '2')
     ])
 ];
 
@@ -109,7 +122,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
     }
 
     useEffect(() => {
-        if (initData.length >= 1) {
+        if (initData.length >= 1 && ["USER"].includes(auth.userData.role)) {
             changeSemester(initData[0].sectionId
                 , initData[0].semester, initData[0].year);
         }
@@ -117,7 +130,6 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
     useEffect(() => {
         setIsLoading(false);
-        // console.log(listCourse)
     }, [listCourse])
 
     const changeSemester = (sectionId, semester, year) => {
@@ -125,17 +137,13 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
         a.textContent = "Học Kỳ : " + semester + " Năm " + year
         if (sectionId != undefined) {
             getListCourse(sectionId);
-            // console.log(sectionId + "--" + a.textContent)
         }
         console.log(auth?.accessToken);
     }
 
     const changeCourse = (id) => {
-        // var a = document.getElementById("semester");
-        // a.textContent = "Học Kỳ : " + semester + " Năm " + year
         if (id != undefined) {
             getCourseAttendanceData(id);
-            // console.log(id)
         }
     }
 
@@ -167,9 +175,6 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
     return (
         <div class="leftpanel"
             style={{
-                // minHeight: "fill-available",
-                // height: "-webkit-fill-available",
-                // height: "1080px",
                 width: "8rem",
                 height: "100vh",
                 display: "flex",
@@ -180,54 +185,79 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 background: "linear-gradient(to bottom, rgb(0, 82, 212), rgb(67, 100, 247), rgb(111, 177, 252))",
                 boxShadow: "3px 7px 10px rgba(0,0,0,.5)"
             }}>
+
+            {/* {["USER"].includes(auth.userData.role) &&
+                    (
+                            
+                        )} */}
             <div style={{ width: '100%' }}>
                 <nav
                     style={{
                         width: "100%",
                     }}>
-                    <ul>
-                        <li class="dropdown">
-                            <a id="semester" href="#">Học Kỳ</a>
-                            <ul class="openright">
-                                {listSemester !== null && listSemester.map(({ sectionId, semester, year }) => (
-                                    <li key={sectionId}>
-                                        <Link onClick={() => changeSemester(sectionId, semester, year)}>{semester} năm {year}</Link>
-                                    </li>
-                                ))}
+
+                    {(["USER"].includes(auth.userData.role) ||
+                    ["TEACHER"].includes(auth.userData.role)) &&
+                        (
+                            <ul>
+
+                                <li class="dropdown">
+                                    <a id="semester" href="#">Học Kỳ</a>
+                                    <ul class="openright">
+                                        {listSemester !== null && listSemester.map(({ sectionId, semester, year }) => (
+                                            <li key={sectionId}>
+                                                <Link onClick={() => changeSemester(sectionId, semester, year)}>{semester} năm {year}</Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#">Danh Sách Lớp Môn Học</a>
+                                    <ul class="openbottom">
+                                        {listCourse !== null && listCourse.map(({ id, courseCode, courseName }) => (
+                                            <li key={id}>
+                                                <Link
+                                                    to={{
+                                                        pathname: `/cs/${id}`,
+                                                    }}
+                                                    onClick={() => changeCourse(id)}>{courseCode}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </li>
+
                             </ul>
-                        </li>
-                        <li class="dropdown">
-                            <a href="#">Danh Sách Lớp Môn Học</a>
-                            <ul class="openbottom">
-                                {listCourse !== null && listCourse.map(({ id, courseCode, courseName }) => (
-                                    <li key={id}>
-                                        <Link
-                                            to={{
-                                                pathname: `/cs/${id}`,
-                                            }}
-                                            onClick={() => changeCourse(id)}>{courseCode}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </li>
-                    </ul>
+                        )}
                 </nav>
 
-                <Menu
-                    onClick={onClick}
-                    mode="inline"
-                    openKeys={openKeys}
-                    onOpenChange={onOpenChange}
-                    style={{
-                        // width: 256,
-                        backgroundColor: 'inherit',
-                        color: 'white',
-                        paddingTop: '5rem',
-                        paddingLeft: '0'
-                    }}
-                    items={items}
-                />
+                {["ADMIN"].includes(auth.userData.role) &&
+                    (
+                        <Menu
+                            onClick={onClick}
+                            mode="inline"
+                            openKeys={openKeys}
+                            onOpenChange={onOpenChange}
+                            style={{
+                                // width: 256,
+                                fontFamily: "Arial",
+                                fontSize: "medium",
+                                textDecoration: "none",
+
+                                backgroundColor: 'inherit',
+                                color: 'white',
+                                paddingTop: '0',
+                                paddingLeft: '0'
+                            }}
+                            items={items}
+                        />
+                    )}
+
+
+
+
+
             </div>
             <div style={{ height: '5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <PoweroffOutlined style={{ fontSize: '2rem', cursor: 'pointer' }} onClick={handleLogout} />

@@ -6,6 +6,7 @@ import { Descriptions, Popconfirm, Select, Table, message } from "antd";
 import "../style/Modal.css";
 import { useEffect, useState } from "react";
 
+
 function AddTeacherModal({
   teacherList,
   show,
@@ -14,6 +15,8 @@ function AddTeacherModal({
   courseSectionTeacherList,
   setCourseSectionTeacherList,
 }) {
+  const [selectedValues, setSelectedValues] = useState([]);
+
   const columns = [
     {
       title: "No.",
@@ -44,19 +47,21 @@ function AddTeacherModal({
       ...courseSectionTeacherList[selectedCourse],
       [courseId]: teachers,
     });
+    if (courseSectionTeacherList.length === 0) {
+        setSelectedValues([])
+    }
   };
 
   const tableFooter = () => {
     return (
       <Select
+        required
         optionFilterProp="label"
         showSearch
-        onSearch={onSearch}
+        // onSearch={onSearch}
         mode="multiple"
         allowClear
-        style={{
-          width: "100%",
-        }}
+        style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
         placeholder="Please select"
         defaultValue={courseSectionTeacherList[selectedCourse]?.map(
           (teacher) => teacher.userId
@@ -66,11 +71,13 @@ function AddTeacherModal({
           value: teacher.userId,
         }))}
         onChange={handleSelectTeacherChange}
+        
       />
     );
   };
 
   const handleAddTeacher = () => {
+    //TODO: update
     console.log("add");
   };
 

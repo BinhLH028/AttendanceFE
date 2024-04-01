@@ -19,7 +19,12 @@ const Home = ({ children }) => {
   const [modalData, setModalData] = useState("");
 
   const [listSemester, setListSemester] = useState([])
-  const [selectedSemester, setSelectedSemester] = useState(listSemester[0])
+  const [selectedSemester, setSelectedSemester] = useState()
+
+  // if (listSemester[0] == null || listSemester[0] == undefined) {
+  //   setSelectedSemester(listSemester[0])
+  // }
+
   const [selectedCourse, setSelectedCourse] = useState([]);
   const [curCS, setCurSC] = useState(0);
 

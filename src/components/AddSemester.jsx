@@ -1,80 +1,79 @@
 import React from 'react';
 import { Table } from 'antd';
+import './../style/AddSemester.css';
 
-const AddSemester = () => {
-    const columns = [
-        {
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
-        },
-        {
-            title: 'Age',
-            dataIndex: 'age',
-            key: 'age',
-        },
-        {
-            title: 'Address',
-            dataIndex: 'address',
-            key: 'address',
-        },
-        {
-            title: 'Action',
-            dataIndex: '',
-            key: 'x',
-            render: () => <a>Delete</a>,
-        },
-    ];
-    const data = [
-        {
-            key: 1,
-            name: 'John Brown',
-            age: 32,
-            address: 'New York No. 1 Lake Park',
-            description: 'My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.',
-        },
-        {
-            key: 2,
-            name: 'Jim Green',
-            age: 42,
-            address: 'London No. 1 Lake Park',
-            description: 'My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park.',
-        },
-        {
-            key: 3,
-            name: 'Not Expandable',
-            age: 29,
-            address: 'Jiangsu No. 1 Lake Park',
-            description: 'This not expandable',
-        },
-        {
-            key: 4,
-            name: 'Joe Black',
-            age: 32,
-            address: 'Sydney No. 1 Lake Park',
-            description: 'My name is Joe Black, I am 32 years old, living in Sydney No. 1 Lake Park.',
-        },
-    ];
-    return (
-        <>
-            <Table
-                columns={columns}
-                expandable={{
-                    expandedRowRender: (record) => (
-                        <p
-                            style={{
-                                margin: 0,
-                            }}
-                        >
-                            {record.description}
-                        </p>
-                    ),
-                    rowExpandable: (record) => record.name !== 'Not Expandable',
-                }}
-                dataSource={data}
-            />
-        </>
-    );
-}
+const outerColumns = [
+  { title: 'Mã lớp học', dataIndex: 'courseCode', key: 'courseCode' },
+  { title: 'Tên lớp học', dataIndex: 'courseName', key: 'courseName' },
+  { title: 'Giảng viên', dataIndex: 'teacherName', key: 'teacherName' },
+];
 
-export default AddSemester;
+const innerColumns = [
+    { title: 'Mã sinh viên', dataIndex: 'userCode', key: 'userCode' },
+    { title: 'Họ và tên', dataIndex: 'userName', key: 'userName' },
+    { title: 'Ngày sinh', dataIndex: 'dob', key: 'dob' },
+  ];
+
+  const data = [
+    {
+      key: '1',
+      courseCode: 'CNTT 01',
+      courseName: 'Introduction to React',
+      teacherName: 'teacher1',
+      children: [
+        {
+          key: '11',
+          userCode: '001',
+          userName: 'Alice',
+          dob: '1990-01-01',
+        },
+        {
+          key: '12',
+          userCode: '002',
+          userName: 'Bob',
+          dob: '1992-05-15',
+        },
+      ],
+    },
+    {
+      key: '2',
+      courseCode: 'CNTT 02',
+      courseName: 'Advanced JavaScript',
+      teacherName: 'teacher1, teacher2',
+      children: [
+        {
+          key: '21',
+          userCode: '003',
+          userName: 'Charlie',
+          dob: '1988-07-20',
+        },
+        {
+          key: '22',
+          userCode: '004',
+          userName: 'David',
+          dob: '1991-11-30',
+        },
+      ],
+    },
+  ];
+
+const App = () => {
+  return (
+    <Table
+      columns={outerColumns}
+      dataSource={data}
+      expandable={{
+        expandedRowRender: (record) => (
+          <Table
+            columns={innerColumns}
+            dataSource={record.children}
+            pagination={{ pageSize: 5 }} // Set pagination for inner table
+          />
+        ),
+        rowExpandable: (record) => record.children && record.children.length > 0,
+      }}
+    />
+  );
+};
+
+export default App;

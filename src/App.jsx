@@ -18,7 +18,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<PersistLogin />}>
-            <Route path='/' element={<RequireAuth allowedRoles={["USER", "TEACHER"]} />}>
+            <Route path='/' element={<RequireAuth allowedRoles={["USER", "TEACHER", "ADMIN"]} />}>
               <Route index element={<Home />} />
               <Route path='attend-successfull/:name' index element={<AttendSuccess />}>
               </Route>
