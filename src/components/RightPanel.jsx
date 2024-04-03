@@ -106,7 +106,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
         try {
             const response = await axiosPrivate.post("/attendance?cs=" + curCS);
 
-            setModalData(auth.userData.userName);
+            setModalData(auth.userData.userName + "%2F" + curCS);
             setOpenModal(true);
             connectSocket();
             setAttenData(new Map());

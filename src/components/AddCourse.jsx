@@ -549,6 +549,11 @@ const AddCourse = () => {
                 type="number"
                 min={0}
                 max={new Date().getFullYear()}
+              /> - 
+              <InputNumber
+                type="number"
+                min={0}
+                max={new Date().getFullYear()}
               />
             </Form.Item>
 
