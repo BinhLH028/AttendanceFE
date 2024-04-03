@@ -135,6 +135,19 @@ const AddCourse = () => {
     }
   }
 
+  const [fromYear, setFromYear] = useState(null);
+  const [toYear, setToYear] = useState(null);
+
+  const handleFromYearChange = (value) => {
+    setFromYear(value);
+    setToYear(value + 1);
+  };
+
+  const handleToYearChange = (value) => {
+    setToYear(value);
+    setFromYear(value - 1);
+  };
+
   const uploadCourses = async ({ file, onSuccess, onError }) => {
     // Create a FormData object to hold the file and additional parameter
     const formData = new FormData();
@@ -369,14 +382,17 @@ const AddCourse = () => {
       setShouldUpdate(true);
       setLoadings([]);
     } catch (error) {
-      console.log(error);
-      showErrorMessage(error);
+      showErrorMessage(error.request.response);
     }
   };
 
   const onSectionFinish = async (values) => {
+    const { semester} = values;
+    console.log("Semester:", semester);
+    console.log("Year Range:", fromYear + "+ " + toYear);
+    const newValues = { ...values,year:`${fromYear}-${toYear}` };
     try {
-      const response = await axiosPrivate.post("/section/new", values);
+      const response = await axiosPrivate.post("/section/new", newValues);
       if (response.status === 200) {
         showSuccessMessage("Tạo học kì thành công!");
       }
@@ -384,8 +400,7 @@ const AddCourse = () => {
       setShouldUpdate(true);
       setLoadings([]);
     } catch (error) {
-      console.log(error);
-      showErrorMessage(error);
+      showErrorMessage(error.request.response);
     }
   };
 
@@ -536,24 +551,36 @@ const AddCourse = () => {
             </Form.Item>
 
             <Form.Item
-              name="year"
+              name="Năm học"
               label="year"
-              rules={[
-                {
-                  required: true,
-                  message: "",
-                },
-              ]}
+            // rules={[
+            //   {
+            //     validator: (_, value) => {
+            //       if (!value || value.length !== 2 || value[0] + 1 !== value[1]) {
+            //         return Promise.reject('Hãy chọn khoảng thời gian phù hợp.');
+            //       }
+            //       return Promise.resolve();
+            //     },
+            //   },
+            // ]}
             >
               <InputNumber
                 type="number"
                 min={0}
-                max={new Date().getFullYear()}
-              /> - 
+                max={new Date().getFullYear() - 1} // Adjusted max value to allow only up to the year before the current year
+                value={fromYear}
+                onChange={handleFromYearChange}
+                // formatter={value => `${value}`}
+                // parser={value => value.replace('-', '')}
+              /> -
               <InputNumber
                 type="number"
-                min={0}
-                max={new Date().getFullYear()}
+                min={1}
+                max={new Date().getFullYear()} // Minimum value set to 1 greater than the "from" year
+                value={toYear}
+                onChange={handleToYearChange}
+                // formatter={value => `${value}`}
+                // parser={value => value.replace('-', '')}
               />
             </Form.Item>
 
@@ -569,7 +596,7 @@ const AddCourse = () => {
                   type="primary"
                   htmlType="submit"
                   disabled={
-                    !isFieldsTouched() ||
+                    isFieldsTouched() ||
                     form1.getFieldsError().filter(({ errors }) => errors.length)
                       .length > 0
                   }
@@ -636,6 +663,23 @@ const AddCourse = () => {
               >
                 <Input />
               </Form.Item>
+
+              {/* <Form.Item
+                label="Nhóm"
+                name="team"
+                rules={[
+                  {
+                    required: false,
+                    message: "Nhóm không được trống!",
+                  }
+                ]}
+              >
+                <Select defaultValue="CL">
+                  <Select.Option value="CL">CL</Select.Option>
+                  <Select.Option value="N1">N1</Select.Option>
+                  <Select.Option value="N2">N2</Select.Option>
+                </Select>
+              </Form.Item> */}
 
               <Form.Item
                 wrapperCol={{
