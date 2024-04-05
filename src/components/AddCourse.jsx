@@ -67,6 +67,11 @@ const AddCourse = () => {
       key: "courseName",
     },
     {
+      title: "Nhóm",
+      dataIndex: "team",
+      key: "team",
+    },
+    {
       title: "Giảng viên",
       dataIndex: "teacherList",
       key: "teacherList",
@@ -319,6 +324,7 @@ const AddCourse = () => {
           };
           flatten(res);
           let teacherList = "";
+          if (res.teacherName != null || res.teacherName != undefined)
           if (res.teacherName.length <= 1) {
             teacherList = res.teacherName[0].userName;
           } else {
@@ -476,7 +482,7 @@ const AddCourse = () => {
       }
     } catch (error) {
       console.error("Error fetching student list:", error);
-      return [];
+      // return [];
     }
   };
 

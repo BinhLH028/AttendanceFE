@@ -48,21 +48,22 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             col1: userCode,
             col2: userName,
             col3: dob,
-            col4: attendanceSheet.lecture1,
-            col5: attendanceSheet.lecture2,
-            col6: attendanceSheet.lecture3,
-            col7: attendanceSheet.lecture4,
-            col8: attendanceSheet.lecture5,
-            col9: attendanceSheet.lecture6,
-            col10: attendanceSheet.lecture7,
-            col11: attendanceSheet.lecture8,
-            col12: attendanceSheet.lecture9,
-            col13: attendanceSheet.lecture10,
-            col14: attendanceSheet.lecture11,
-            col15: attendanceSheet.lecture12,
-            col16: attendanceSheet.lecture13,
-            col17: attendanceSheet.lecture14,
-            col18: attendanceSheet.lecture15,
+            col4: attendanceSheet.totalAbsence,
+            col5: attendanceSheet.lecture1,
+            col6: attendanceSheet.lecture2,
+            col7: attendanceSheet.lecture3,
+            col8: attendanceSheet.lecture4,
+            col9: attendanceSheet.lecture5,
+            col10: attendanceSheet.lecture6,
+            col11: attendanceSheet.lecture7,
+            col12: attendanceSheet.lecture8,
+            col13: attendanceSheet.lecture9,
+            col14: attendanceSheet.lecture10,
+            col15: attendanceSheet.lecture11,
+            col16: attendanceSheet.lecture12,
+            col17: attendanceSheet.lecture13,
+            col18: attendanceSheet.lecture14,
+            col19: attendanceSheet.lecture15,
         })));
 
         console.log(rows)
@@ -71,21 +72,22 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             { field: 'col1', headerName: 'Mã SV', width: 150 },
             { field: 'col2', headerName: 'Họ và tên', width: 150 },
             { field: 'col3', headerName: 'Ngày sinh', width: 150 },
-            { field: 'col4', headerName: 'lecture 1', width: 150, type: 'boolean', editable: true },
-            { field: 'col5', headerName: 'lecture 2', width: 150, type: 'boolean', editable: true },
-            { field: 'col6', headerName: 'lecture 3', width: 150, type: 'boolean', editable: true },
-            { field: 'col7', headerName: 'lecture 4', width: 150, type: 'boolean', editable: true },
-            { field: 'col8', headerName: 'lecture 5', width: 150, type: 'boolean', editable: true },
-            { field: 'col9', headerName: 'lecture 6', width: 150, type: 'boolean', editable: true },
-            { field: 'col10', headerName: 'lecture 7', width: 150, type: 'boolean', editable: true },
-            { field: 'col11', headerName: 'lecture 8', width: 150, type: 'boolean', editable: true },
-            { field: 'col12', headerName: 'lecture 9', width: 150, type: 'boolean', editable: true },
-            { field: 'col13', headerName: 'lecture 10', width: 150, type: 'boolean', editable: true },
-            { field: 'col14', headerName: 'lecture 11', width: 150, type: 'boolean', editable: true },
-            { field: 'col15', headerName: 'lecture 12', width: 150, type: 'boolean', editable: true },
-            { field: 'col16', headerName: 'lecture 13', width: 150, type: 'boolean', editable: true },
-            { field: 'col17', headerName: 'lecture 14', width: 150, type: 'boolean', editable: true },
-            { field: 'col18', headerName: 'lecture 15', width: 150, type: 'boolean', editable: true },
+            { field: 'col4', headerName: 'Số buổi vắng', width: 150},
+            { field: 'col5', headerName: 'Buổi 1', width: 150, type: 'boolean', editable: true },
+            { field: 'col6', headerName: 'Buổi 2', width: 150, type: 'boolean', editable: true },
+            { field: 'col7', headerName: 'Buổi 3', width: 150, type: 'boolean', editable: true },
+            { field: 'col8', headerName: 'Buổi 4', width: 150, type: 'boolean', editable: true },
+            { field: 'col9', headerName: 'Buổi 5', width: 150, type: 'boolean', editable: true },
+            { field: 'col10', headerName: 'Buổi 6', width: 150, type: 'boolean', editable: true },
+            { field: 'col11', headerName: 'Buổi 7', width: 150, type: 'boolean', editable: true },
+            { field: 'col12', headerName: 'Buổi 8', width: 150, type: 'boolean', editable: true },
+            { field: 'col13', headerName: 'Buổi 9', width: 150, type: 'boolean', editable: true },
+            { field: 'col14', headerName: 'Buổi 10', width: 150, type: 'boolean', editable: true },
+            { field: 'col15', headerName: 'Buổi 11', width: 150, type: 'boolean', editable: true },
+            { field: 'col16', headerName: 'Buổi 12', width: 150, type: 'boolean', editable: true },
+            { field: 'col17', headerName: 'Buổi 13', width: 150, type: 'boolean', editable: true },
+            { field: 'col18', headerName: 'Buổi 14', width: 150, type: 'boolean', editable: true },
+            { field: 'col19', headerName: 'Buổi 15', width: 150, type: 'boolean', editable: true },
         ]);
     }
 
@@ -104,7 +106,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
 
     const createAttendanceSession = async () => {
         try {
-            const response = await axiosPrivate.post("/attendance?cs=" + curCS);
+            const response = await axiosPrivate.post("/attendance?cs=" + curCS + "?lec=" + lecture);
 
             setModalData(auth.userData.userName + "%2F" + curCS);
             setOpenModal(true);

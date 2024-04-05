@@ -48,7 +48,7 @@ function AddTeacherModal({
       [courseId]: teachers,
     });
     if (courseSectionTeacherList.length === 0) {
-        setSelectedValues([])
+      setSelectedValues([])
     }
   };
 
@@ -71,7 +71,7 @@ function AddTeacherModal({
           value: teacher.userId,
         }))}
         onChange={handleSelectTeacherChange}
-        
+
       />
     );
   };
