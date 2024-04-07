@@ -1,11 +1,12 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import Button from "react-bootstrap/Button";
+// import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 // import { Table } from 'antd';
-import { Descriptions, Popconfirm, Select, Table, message } from "antd";
+import { Descriptions, Form, Popconfirm, Select, Table, message, Button } from "antd";
 import "../style/Modal.css";
-import { useEffect, useState } from "react";
-
+import { useEffect, useRef, useState } from "react";
+import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
+import { axiosPrivate } from "../api/http-common";
 
 function AddTeacherModal({
   teacherList,
@@ -14,6 +15,7 @@ function AddTeacherModal({
   selectedCourse,
   courseSectionTeacherList,
   setCourseSectionTeacherList,
+  fetchAllData
 }) {
   const [selectedValues, setSelectedValues] = useState([]);
 
@@ -35,60 +37,61 @@ function AddTeacherModal({
     },
   ];
 
-  const handleSelectTeacherChange = (courseId) => {
-    const teachers = response.data.map((teacher, index) => {
-      return {
-        ...teacher,
-        dob: teacher.dob.substring(0, 10),
-        no: index + 1,
-      };
-    });
-    setCourseSectionTeacherList({
-      ...courseSectionTeacherList[selectedCourse],
-      [courseId]: teachers,
-    });
-    if (courseSectionTeacherList.length === 0) {
-        setSelectedValues([])
-    }
+  const [disableSubmitButton, setDisableSubmitButton] = useState(true);
+
+  const [loading, setLoading] = useState(false);
+
+  const [selectValue, setSelectValue] = useState([]);
+
+  const handleSelectTeacherChange = (value) => {
+    console.log('selected' + value);
+    setSelectValue(value);
+    setDisableSubmitButton(false);
   };
 
   const tableFooter = () => {
     return (
       <Select
+        value={selectValue}
         required
         optionFilterProp="label"
         showSearch
-        // onSearch={onSearch}
         mode="multiple"
         allowClear
         style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
         placeholder="Please select"
-        defaultValue={courseSectionTeacherList[selectedCourse]?.map(
-          (teacher) => teacher.userId
-        )}
         options={teacherList.map((teacher) => ({
           label: teacher.username,
           value: teacher.userId,
         }))}
         onChange={handleSelectTeacherChange}
-        
       />
     );
   };
 
-  const handleAddTeacher = () => {
-    //TODO: update
-    console.log("add");
-  };
+  const handleSubmitButton = async () => {
+    setLoading(true);
+    let submitValues = { teacherIds: [...selectValue], courseSection: selectedCourse };
+    try {
+      const response = await axiosPrivate.post("/teacher_teach/update", submitValues);
+      if (response.status === 200) {
+        showSuccessMessage("Them giang vien thành công!");
+      }
+      onClose();
+      setLoading(false);
+      fetchAllData();
+    } catch (error) {
+      console.log(error);
+      showErrorMessage(error);
+    }
+  }
 
-  const confirm = (e) => {
-    console.log(e);
-    message.success("Click on Yes");
-  };
-  const cancel = (e) => {
-    console.log(e);
-    message.error("Click on No");
-  };
+  useEffect(() => {
+    if (selectedCourse) {
+      setSelectValue(courseSectionTeacherList[selectedCourse]?.map((teacher) => teacher.userId));
+      setDisableSubmitButton(true);
+    }
+  }, [selectedCourse])
 
   return (
     <>
@@ -121,18 +124,9 @@ function AddTeacherModal({
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Popconfirm
-            title="Modify teacher list"
-            description="Are you sure to modify teacher list?"
-            onConfirm={confirm}
-            onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button variant="primary" onClick={handleAddTeacher}>
-              Submit
-            </Button>
-          </Popconfirm>
+          <Button variant="primary" loading={loading} onClick={handleSubmitButton} disabled={disableSubmitButton}>
+            Submit
+          </Button>
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>

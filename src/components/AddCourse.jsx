@@ -42,7 +42,7 @@ const AddCourse = () => {
             type="primary"
             shape="circle"
             className="bg-[#1677ff]"
-            onClick={() => handleShowAddTeacherModal(course)}
+          // onClick={() => handleShowAddTeacherModal(course)}
           >
             +
           </Button>
@@ -161,18 +161,15 @@ const AddCourse = () => {
         }
       });
 
-      console.log(response.data); // Log response data
       if (response.status === 200) {
         showSuccessMessage(response.data);
         setShouldUpdate(true); // reload UI
         onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
       } else {
-        console.log(response.data.body + " binh");
         showErrorMessage(response.data.body);
         onError(new Error('Upload failed')); // Call onError callback provided by Ant Design Upload component
       }
     } catch (error) {
-      console.log(error.request.response);
       if (isJSONString(error.request.response)) {
         const temp = JSON.parse(error.request.response);
         showErrorMessage(temp.join("\n"));
@@ -209,18 +206,15 @@ const AddCourse = () => {
         }
       });
 
-      console.log(response.data); // Log response data
       if (response.status === 200) {
         showSuccessMessage(response.data);
         setShouldUpdate(true); // reload UI
         onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
       } else {
-        console.log(response.data.body + " binh");
         showErrorMessage(response.data.body);
         onError(new Error('Upload failed')); // Call onError callback provided by Ant Design Upload component
       }
     } catch (error) {
-      console.log(error.request.response);
       if (isJSONString(error.request.response)) {
         const temp = JSON.parse(error.request.response);
         showErrorMessage(temp.join("\n"));
@@ -268,9 +262,7 @@ const AddCourse = () => {
         return { ...course, value: course.courseId, label: course.courseCode };
       });
       setCourseTableData(courseList);
-      console.log(response);
     } catch (error) {
-      console.log(error);
       showErrorMessage(error);
     }
   };
@@ -286,13 +278,10 @@ const AddCourse = () => {
             label: "Học kì " + res.semester + " năm " + res.year,
             value: res.sectionId,
           });
-          console.log(res);
         });
         setSectionOptions(listData);
-        console.log(listData);
       }
     } catch (error) {
-      console.log(error);
       showErrorMessage(error);
     }
   };
@@ -319,14 +308,16 @@ const AddCourse = () => {
           };
           flatten(res);
           let teacherList = "";
-          if (res.teacherName.length <= 1) {
-            teacherList = res.teacherName[0].userName;
-          } else {
-            teacherList = res.teacherName.reduce((acc, teacher) => {
-              return acc + ", " + teacher.userName;
-            }, "");
-            // console.log(teacherList);
-            teacherList = teacherList.slice(1, teacherList.length);
+          if (res.teacherName !== null) {
+            if (res.teacherName.length <= 1) {
+              teacherList = res.teacherName[0].userName;
+            } else {
+              teacherList = res.teacherName.reduce((acc, teacher) => {
+                return acc + ", " + teacher.userName;
+              }, "");
+              // console.log(teacherList);
+              teacherList = teacherList.slice(1, teacherList.length);
+            }
           }
           courseSection = {
             ...courseSection,
@@ -343,9 +334,7 @@ const AddCourse = () => {
         },
       });
       setCourseSectionTableLoading(false);
-      console.log(courseList);
     } catch (error) {
-      console.log(error);
       showErrorMessage(error);
     }
   };
@@ -361,12 +350,10 @@ const AddCourse = () => {
             label: res.username,
             value: res.userId,
           });
-          console.log(res);
         });
         setTeacherOptions(listData);
       }
     } catch (error) {
-      console.log(error);
       showErrorMessage(error);
     }
   };
@@ -374,7 +361,6 @@ const AddCourse = () => {
   const onCourseFinish = async (values) => {
     try {
       const response = await axiosPrivate.post("/course/new", values);
-      console.log(response);
       if (response.status === 200) {
         showSuccessMessage("Tạo khóa học thành công!");
       }
@@ -387,10 +373,8 @@ const AddCourse = () => {
   };
 
   const onSectionFinish = async (values) => {
-    const { semester} = values;
-    console.log("Semester:", semester);
-    console.log("Year Range:", fromYear + "+ " + toYear);
-    const newValues = { ...values,year:`${fromYear}-${toYear}` };
+    const { semester } = values;
+    const newValues = { ...values, year: `${fromYear}-${toYear}` };
     try {
       const response = await axiosPrivate.post("/section/new", newValues);
       if (response.status === 200) {
@@ -406,7 +390,7 @@ const AddCourse = () => {
 
   function isFieldsTouched() {
     return (
-      form1.isFieldTouched("semester") && form1.isFieldTouched("year")
+      form1.isFieldTouched("semester") && form1.isFieldTouched("startYear") && form1.isFieldTouched("endYear")
     );
   }
 
@@ -455,23 +439,26 @@ const AddCourse = () => {
         return courseSectionTeacherList[courseId];
       } else {
         // If not cached, fetch student list from server
-        const response = await axiosPrivate.get(`/teacher_teach`, {
-          params: { id: courseId },
-        });
+        let teachers = []
+        try {
+          const response = await axiosPrivate.get(`/teacher_teach`, {
+            params: { id: courseId },
+          });
 
-        const teachers = response.data.map((teacher, index) => {
-          return {
-            ...teacher,
-            dob: teacher.dob.substring(0, 10),
-            no: index + 1,
-          };
-        });
-        // Cache the student list for this course
+          teachers = response.data.map((teacher, index) => {
+            return {
+              ...teacher,
+              dob: teacher.dob.substring(0, 10),
+              no: index + 1,
+            };
+          });
 
-        setCourseSectionTeacherList({ ...courseSectionTeacherList, [courseId]: teachers });
+          setCourseSectionTeacherList({ ...courseSectionTeacherList, [courseId]: teachers });
+        } catch (error) {
+          console.error(error);
 
-        // console.log(CourseSectionTeacherList);
-
+          setCourseSectionTeacherList({ ...courseSectionTeacherList, [courseId]: teachers });
+        }
         return teachers;
       }
     } catch (error) {
@@ -495,13 +482,16 @@ const AddCourse = () => {
     setEditedCell(params);
   };
 
+  const fetchAllData = () => {
+    getCourses();
+    getSections();
+    getCourseSections(value);
+    getTeachers();
+  }
+
   useEffect(() => {
     if (shouldUpdate) {
-      getCourses();
-      getSections();
-      // setUpData();
-      getCourseSections(value);
-      getTeachers();
+      fetchAllData();
       setShouldUpdate(false); // Reset shouldUpdate after fetching data
     }
   }, [shouldUpdate, value]);
@@ -512,19 +502,19 @@ const AddCourse = () => {
 
   return (
     <>
-      <div className="h-screen grid grid-cols-10 grid-rows-4 gap-4 rounded-xl mr-5">
-        <div className="col-span-3 bg-gray-50 rounded-xl p-4 min-w-64">
+      <div className="h-screen grid grid-cols-10 grid-rows-7 gap-4 rounded-xl mr-5">
+        <div className="col-span-3 row-span-2 bg-gray-50 rounded-xl p-4 min-w-64 overflow-auto">
           <Form
             labelCol={{
               span: 8,
             }}
             wrapperCol={{
-              span: 10,
+              span: 16,
             }}
             style={{
-              width: "auto",
-              maxWidth: 600,
-              paddingRight: "2rem",
+              width: "100%",
+              // maxWidth: 600,
+              // paddingRight: "2rem",
             }}
             initialValues={{
               remember: true,
@@ -532,6 +522,7 @@ const AddCourse = () => {
             onFinish={onSectionFinish}
             autoComplete="off"
             form={form1}
+            className="h-36"
           >
             <Form.Item
               label="Học kì"
@@ -551,8 +542,15 @@ const AddCourse = () => {
             </Form.Item>
 
             <Form.Item
-              name="Năm học"
-              label="year"
+              name="year"
+              label="Năm học"
+              className="h-8"
+              rules={[
+                {
+                  required: true,
+                  message: "Nam hoc không được trống!",
+                },
+              ]}
             // rules={[
             //   {
             //     validator: (_, value) => {
@@ -564,24 +562,62 @@ const AddCourse = () => {
             //   },
             // ]}
             >
-              <InputNumber
-                type="number"
-                min={0}
-                max={new Date().getFullYear() - 1} // Adjusted max value to allow only up to the year before the current year
-                value={fromYear}
-                onChange={handleFromYearChange}
+              <Form.Item
+                name="startYear"
+                style={{
+                  display: 'inline-block',
+                  width: 'calc(50% - 20px)',
+                }}
+                rules={[
+                  {
+                    required: true,
+                    message: ''
+                  },
+                ]}
+              >
+                <InputNumber
+                  type="number"
+                  min={0}
+                  max={new Date().getFullYear() - 1} // Adjusted max value to allow only up to the year before the current year
+                  value={fromYear}
+                  onChange={handleFromYearChange}
                 // formatter={value => `${value}`}
                 // parser={value => value.replace('-', '')}
-              /> -
-              <InputNumber
-                type="number"
-                min={1}
-                max={new Date().getFullYear()} // Minimum value set to 1 greater than the "from" year
-                value={toYear}
-                onChange={handleToYearChange}
+                />
+              </Form.Item>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '24px',
+                  lineHeight: '32px',
+                  textAlign: 'center',
+                }}
+              >
+                -
+              </span>
+              <Form.Item
+                name="endYear"
+                style={{
+                  display: 'inline-block',
+                  width: 'calc(50% - 20px)',
+                }}
+                rules={[
+                  {
+                    required: true,
+                    message: ''
+                  },
+                ]}
+              >
+                <InputNumber
+                  type="number"
+                  min={1}
+                  max={new Date().getFullYear()} // Minimum value set to 1 greater than the "from" year
+                  value={toYear}
+                  onChange={handleToYearChange}
                 // formatter={value => `${value}`}
                 // parser={value => value.replace('-', '')}
-              />
+                />
+              </Form.Item>
             </Form.Item>
 
             <Form.Item
@@ -596,7 +632,7 @@ const AddCourse = () => {
                   type="primary"
                   htmlType="submit"
                   disabled={
-                    isFieldsTouched() ||
+                    !isFieldsTouched() ||
                     form1.getFieldsError().filter(({ errors }) => errors.length)
                       .length > 0
                   }
@@ -611,7 +647,7 @@ const AddCourse = () => {
           </Form>
         </div>
 
-        <div className="col-span-3 row-span-3 row-start-2 rounded-xl bg-gray-50 p-4 min-w-64">
+        <div className="col-span-3 row-span-5 rounded-xl bg-gray-50 p-4 min-w-64">
           <div
             className="md:col-span-4 rounded-xl"
             style={{
@@ -716,13 +752,16 @@ const AddCourse = () => {
             </div>
 
             <Table
+              rowKey={courseTableData.no}
               columns={courseTableColumns}
               dataSource={courseTableData}
               // pagination={coursetableParams.pagination}
               pagination={{ pageSize: 5 }}
               loading={courseTableLoading}
               // onChange={handleCourseTableChange}
-              className=""
+              scroll={{
+                y: 100,
+              }}
             />
           </div>
         </div>
@@ -760,6 +799,7 @@ const AddCourse = () => {
         selectedCourse={selectedCourseSection}
         courseSectionTeacherList={courseSectionTeacherList}
         setCourseSectionTeacherList={setCourseSectionTeacherList}
+        fetchAllData={fetchAllData}
       />
 
     </>
