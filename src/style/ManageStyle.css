@@ -1,0 +1,13 @@
+.even-row {
+    background-color: rgb(143, 201, 240);
+}
+
+.odd-row {
+    background-color: rgb(255, 255, 255);
+}
+
+.boolean-cell {
+    display: inline-block;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
