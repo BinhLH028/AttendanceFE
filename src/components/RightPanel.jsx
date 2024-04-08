@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ReactElement } from 'react'
+import React, { useEffect, useState, ReactElement, useRef } from 'react'
 import { ClientJS } from 'clientjs';
 import { over } from 'stompjs';
 import SockJS from 'sockjs-client';
@@ -30,15 +30,8 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     const [rows, setRows] = new useState([]);
     const [columns, setColumns] = new useState([]);
     const [editedAttend, setEdittedAttend] = new useState([]);
-    const [editedCell, setEditedCell] = useState(null);
-
-    let arrayEditAttend = [];
 
     let i = 1;
-    // let j = 1;
-    // var rows;
-    // var columns;
-
 
     const setUpData = async (selectedCourse) => {
         setData(selectedCourse)
@@ -175,6 +168,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
 
     const handleSelectChange = (event) => {
         setLecture(event.target.value);
+
         console.log(lecture)
     }
 
@@ -215,8 +209,11 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     }
     // TODO: fix
     const onCellEditCommit = (params) => {
-        arrayEditAttend.push(params.row.col20)
-        setEdittedAttend(arrayEditAttend)
+        if (!editedAttend.includes(params.row.col20)) {
+            const newEditedAttend = [...editedAttend, params.row.col20];
+            setEdittedAttend(newEditedAttend)
+        }
+        console.log("binh+" + editedAttend);
     };
 
     if (isFectch) return (
