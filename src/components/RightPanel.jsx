@@ -29,9 +29,10 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
 
     const [rows, setRows] = new useState([]);
     const [columns, setColumns] = new useState([]);
+    const [editedAttend, setEdittedAttend] = new useState([]);
     const [editedCell, setEditedCell] = useState(null);
 
-
+    let arrayEditAttend = [];
 
     let i = 1;
     // let j = 1;
@@ -43,7 +44,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
         setData(selectedCourse)
         console.log(data)
 
-        await setRows(selectedCourse.map(({ userId, userCode, userName, dob, attendanceSheet }) => ({
+        await setRows(selectedCourse.map(({ userId, userCode, userName, dob, sheetId, attendanceSheet }) => ({
             id: i++,
             col1: userCode,
             col2: userName,
@@ -64,6 +65,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             col17: attendanceSheet.lecture13,
             col18: attendanceSheet.lecture14,
             col19: attendanceSheet.lecture15,
+            col20: userId
         })));
 
         console.log(rows)
@@ -88,6 +90,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             { field: 'col17', headerName: 'Buổi 13', width: 150, type: 'boolean', editable: true },
             { field: 'col18', headerName: 'Buổi 14', width: 150, type: 'boolean', editable: true },
             { field: 'col19', headerName: 'Buổi 15', width: 150, type: 'boolean', editable: true },
+            { field: 'col20', headerName: 'Attendance ID', width: 150, hide: true },
         ]);
     }
 
@@ -106,7 +109,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
 
     const createAttendanceSession = async () => {
         try {
-            const response = await axiosPrivate.post("/attendance?cs=" + curCS + "?lec=" + lecture);
+            const response = await axiosPrivate.post("/attendance?cs=" + curCS + "&lec=" + lecture);
 
             setModalData(auth.userData.userName + "%2F" + curCS);
             setOpenModal(true);
@@ -124,6 +127,8 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                 theme: "light",
                 transition: Bounce,
             });
+            // reset edit array when create new session
+            arrayEditAttend.length = 0;
         } catch (error) {
             toast.success(`Error : ${error}`, {
                 position: "top-right",
@@ -176,7 +181,8 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     const saveAttendanceSession = async () => {
         var attendSession = {
             lectureNum: parseInt(lecture),
-            listStudentId: Array.from(attenData.values())
+            listStudentId: Array.from(attenData.values()),
+            listEditUserAttends: editedAttend
         }
         let response;
         try {
@@ -207,16 +213,10 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             });
         }
     }
-
+    // TODO: fix
     const onCellEditCommit = (params) => {
-        // params contains information about the edited cell
-        console.log('Edited Cell:', params);
-
-        // Access the entire row using params.row
-        console.log('Entire Row:', params.row);
-
-        // Store the edited cell for further use if needed
-        setEditedCell(params);
+        arrayEditAttend.push(params.row.col20)
+        setEdittedAttend(arrayEditAttend)
     };
 
     if (isFectch) return (
@@ -248,7 +248,10 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                             rows={rows}
                             columns={columns}
                             pageSizeOptions={[]}
-                            onCellEditCommit={onCellEditCommit} />
+                            columnVisibilityModel={{
+                                col20: false,
+                            }}
+                            onCellEditStop={onCellEditCommit} />
                     </div>
 
                     {/* && client.isMobile() */}
