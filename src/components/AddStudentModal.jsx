@@ -14,6 +14,7 @@ function AddStudentModal({
     onClose,
     selectedCourse,
     courseSectionStudentList,
+    setCourseSectionStudentList,
     getCourseSections
 }) {
     const [selectedValues, setSelectedValues] = useState([]);
@@ -75,6 +76,7 @@ function AddStudentModal({
             const response = await axiosPrivate.post("/student_enrolled/update", submitValues);
             if (response.status === 200) {
                 showSuccessMessage("Thêm sinh viên thành công!");
+                setCourseSectionStudentList(selectValue);
             }
             onClose();
             setLoading(false);

@@ -71,11 +71,12 @@ function AddTeacherModal({
 
   const handleSubmitButton = async () => {
     setLoading(true);
-    let submitValues = { teacherIds: [...selectValue], courseSection: selectedCourse };
+    let submitValues = { teacherIds: [...selectValue], courseSectionId: selectedCourse };
     try {
       const response = await axiosPrivate.post("/teacher_teach/update", submitValues);
       if (response.status === 200) {
         showSuccessMessage("Them giang vien thành công!");
+        setCourseSectionTeacherList(selectValue);
       }
       onClose();
       setLoading(false);
