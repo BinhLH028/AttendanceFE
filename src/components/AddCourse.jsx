@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, Select, Table, message, Upload } from "antd";
+import { Button, Form, Input, InputNumber, Select, Table, message, Upload, Skeleton } from "antd";
 import { UploadOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
@@ -120,8 +120,6 @@ const AddCourse = () => {
     },
   });
 
-  const [shouldUpdate, setShouldUpdate] = useState(true);
-
   const [value, setValue] = useState(1);
 
   const [loadings, setLoadings] = useState([]);
@@ -163,7 +161,7 @@ const AddCourse = () => {
 
       if (response.status === 200) {
         showSuccessMessage(response.data);
-        setShouldUpdate(true); // reload UI
+        getCourses();
         onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
       } else {
         showErrorMessage(response.data.body);
@@ -208,7 +206,7 @@ const AddCourse = () => {
 
       if (response.status === 200) {
         showSuccessMessage(response.data);
-        setShouldUpdate(true); // reload UI
+        getCourseSections(value);
         onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
       } else {
         showErrorMessage(response.data.body);
@@ -336,6 +334,7 @@ const AddCourse = () => {
       setCourseSectionTableLoading(false);
     } catch (error) {
       showErrorMessage(error);
+      console.log(error);
     }
   };
 
@@ -365,7 +364,7 @@ const AddCourse = () => {
         showSuccessMessage("Tạo khóa học thành công!");
       }
       form2.resetFields();
-      setShouldUpdate(true);
+      getCourses();
       setLoadings([]);
     } catch (error) {
       showErrorMessage(error.request.response);
@@ -381,7 +380,7 @@ const AddCourse = () => {
         showSuccessMessage("Tạo học kì thành công!");
       }
       form1.resetFields();
-      setShouldUpdate(true);
+      getSections();
       setLoadings([]);
     } catch (error) {
       showErrorMessage(error.request.response);
@@ -482,19 +481,11 @@ const AddCourse = () => {
     setEditedCell(params);
   };
 
-  const fetchAllData = () => {
+  useEffect(() => {
     getCourses();
     getSections();
-    getCourseSections(value);
     getTeachers();
-  }
-
-  useEffect(() => {
-    if (shouldUpdate) {
-      fetchAllData();
-      setShouldUpdate(false); // Reset shouldUpdate after fetching data
-    }
-  }, [shouldUpdate, value]);
+  }, []);
 
   useEffect(() => {
     getCourseSections(value);
@@ -647,9 +638,9 @@ const AddCourse = () => {
           </Form>
         </div>
 
-        <div className="col-span-3 row-span-5 rounded-xl bg-gray-50 p-4 min-w-64">
+        <div className="col-span-3 row-span-5 rounded-xl bg-gray-50 p-4 min-w-64 overflow-auto">
           <div
-            className="md:col-span-4 rounded-xl"
+            className="md:col-span-4 rounded-xl h-full"
             style={{
               minWidth: "250px",
             }}
@@ -766,17 +757,21 @@ const AddCourse = () => {
           </div>
         </div>
 
-        <div className="col-span-7 row-span-full col-start-4 bg-gray-50 rounded-xl ">
-          <Select
-            allowClear
-            style={{
-              width: "20%",
-              margin: "10px",
-            }}
-            placeholder="Chọn học kỳ"
-            onChange={handleChange}
-            options={sectionOptions}
-          />
+        <div className="col-span-7 row-span-full col-start-4 bg-gray-50 rounded-xl overflow-auto">
+          {sectionOptions.length ?
+            <Select
+              allowClear
+              style={{
+                width: "20%",
+                margin: "10px",
+              }}
+              placeholder="Chọn học kỳ"
+              onChange={handleChange}
+              options={sectionOptions}
+              defaultValue={sectionOptions[0]}
+            /> :
+            <Skeleton.Input active={true} size="large" />
+          }
           <Upload {...propsCourseSection} style={{ display: "inline-block" }}>
             <Button icon={<UploadOutlined />}>Upload danh sách LMH</Button>
           </Upload>
@@ -799,7 +794,7 @@ const AddCourse = () => {
         selectedCourse={selectedCourseSection}
         courseSectionTeacherList={courseSectionTeacherList}
         setCourseSectionTeacherList={setCourseSectionTeacherList}
-        fetchAllData={fetchAllData}
+        getCourseSections={getCourseSections}
       />
 
     </>

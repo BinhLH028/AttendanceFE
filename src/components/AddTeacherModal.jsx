@@ -15,7 +15,7 @@ function AddTeacherModal({
   selectedCourse,
   courseSectionTeacherList,
   setCourseSectionTeacherList,
-  fetchAllData
+  getCourseSections
 }) {
   const [selectedValues, setSelectedValues] = useState([]);
 
@@ -79,7 +79,7 @@ function AddTeacherModal({
       }
       onClose();
       setLoading(false);
-      fetchAllData();
+      getCourseSections();
     } catch (error) {
       console.log(error);
       showErrorMessage(error);

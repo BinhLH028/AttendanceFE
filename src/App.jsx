@@ -24,7 +24,7 @@ function App() {
               </Route>
               <Route path='cs/:id/*' element={<Home />} />
               <Route path='course' element={<Home> <AddCourse/> </Home>} />
-              <Route path='semester' element={<Home> <AddSemester/> </Home>} />
+              <Route path='semester/*' element={<Home> <AddSemester/> </Home>} />
             </Route>
           </Route>
 
