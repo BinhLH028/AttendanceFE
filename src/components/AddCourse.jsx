@@ -67,6 +67,11 @@ const AddCourse = () => {
       key: "courseName",
     },
     {
+      title: "Nhóm",
+      dataIndex: "team",
+      key: "team",
+    },
+    {
       title: "Giảng viên",
       dataIndex: "teacherList",
       key: "teacherList",
@@ -306,16 +311,15 @@ const AddCourse = () => {
           };
           flatten(res);
           let teacherList = "";
-          if (res.teacherName !== null) {
-            if (res.teacherName.length <= 1) {
-              teacherList = res.teacherName[0].userName;
-            } else {
-              teacherList = res.teacherName.reduce((acc, teacher) => {
-                return acc + ", " + teacher.userName;
-              }, "");
-              // console.log(teacherList);
-              teacherList = teacherList.slice(1, teacherList.length);
-            }
+          if (res.teacherName != null || res.teacherName != undefined)
+          if (res.teacherName.length <= 1) {
+            teacherList = res.teacherName[0].userName;
+          } else {
+            teacherList = res.teacherName.reduce((acc, teacher) => {
+              return acc + ", " + teacher.userName;
+            }, "");
+            // console.log(teacherList);
+            teacherList = teacherList.slice(1, teacherList.length);
           }
           courseSection = {
             ...courseSection,
@@ -462,7 +466,7 @@ const AddCourse = () => {
       }
     } catch (error) {
       console.error("Error fetching student list:", error);
-      return [];
+      // return [];
     }
   };
 

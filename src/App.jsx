@@ -11,6 +11,7 @@ import AttendSuccess from './components/AttendSuccess';
 import PersistLogin from './components/PersistLogin';
 import AddCourse from './components/AddCourse';
 import AddSemester from './components/AddSemester';
+import Manage from './components/Manage';
 
 function App() {
   return (
@@ -20,11 +21,13 @@ function App() {
           <Route element={<PersistLogin />}>
             <Route path='/' element={<RequireAuth allowedRoles={["USER", "TEACHER", "ADMIN"]} />}>
               <Route index element={<Home />} />
-              <Route path='attend-successfull/:name/*' index element={<AttendSuccess />}>
-              </Route>
+              <Route path='attend-successfull/:name/*' index element={<AttendSuccess />}/>
               <Route path='cs/:id/*' element={<Home />} />
               <Route path='course' element={<Home> <AddCourse/> </Home>} />
               <Route path='semester/*' element={<Home> <AddSemester/> </Home>} />
+            </Route>
+            <Route path='/' element={<RequireAuth allowedRoles={["TEACHER", "ADMIN"]} />}>
+              <Route path='manage' element={<Home><Manage /> </Home>} />
             </Route>
           </Route>
 

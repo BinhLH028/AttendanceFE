@@ -37,7 +37,14 @@ const items = [
                 fontSize: "medium",
                 textDecoration: "none"
             }}
-            to={'/semester'}>LMH</Link>, '2')
+            to={'/semester'}>LMH</Link>, '2'),
+        getItem(<Link
+            style={{
+                fontFamily: "Arial",
+                fontSize: "medium",
+                textDecoration: "none"
+            }}
+            to={'/manage'}>Manage</Link>, '3')
     ])
 ];
 
