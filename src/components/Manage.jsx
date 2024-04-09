@@ -330,7 +330,7 @@ const Manage = () => {
   // init data
   useEffect(() => {
     getSections();
-    getTableData();
+    // getTableData();
   }, []);
 
 

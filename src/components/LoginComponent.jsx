@@ -4,8 +4,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import httpClient from "../api/http-common";
 import useAuth from "./hooks/useAuth";
 import "./style.css";
-import useRefreshToken from "./hooks/useRefreshToken";
-import useAxiosPrivate from "./hooks/useAxiosPrivate";
+import { faCheck, faTimes, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import { showSuccessMessage } from "../util/toastdisplay";
 import { toast } from "react-toastify";
@@ -55,8 +55,11 @@ const LoginComponent = () => {
 
     useEffect(() => {
         setValidPwd(PWD_REGEX.test(password));
+        setValidName(USER_REGEX.test(user));
         if (!isLogin)
             setValidMatch(password === matchPwd);
+            // console.log("1name" +validName+ "2pwd" +validPwd+"3match"+validMatch + "4"+ isLogin);
+
     }, [password, matchPwd, isLogin])
 
     useEffect(() => {
@@ -144,7 +147,7 @@ const LoginComponent = () => {
             username: user.trim().toLowerCase(),
             email: email,
             password: password,
-            role: "USER",
+            role: "TEACHER",
         });
         const response = await httpClient.post("/user/register", registerData)
         // console.log(response)
@@ -165,6 +168,7 @@ const LoginComponent = () => {
                             value={user}
                             onChange={(e) => setUser(e.target.value)}
                         />
+                        {!validName && <p style={{ color: 'red'}}>Tên không được để trống và không chấp nhận số</p>}
                         <input type="email" placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -172,6 +176,10 @@ const LoginComponent = () => {
                         <input type="password" placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <input type="password" placeholder="Re-Password"
+                            value={matchPwd}
+                            onChange={(e) => setMatchPwd(e.target.value)}
                         />
                         <button id="submit" type="button" disabled={!validName || !validPwd || !validMatch ? true : false}
                             onClick={(e) => sendRegisterRequest()}>Đăng ký</button>

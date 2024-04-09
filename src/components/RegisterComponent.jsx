@@ -55,7 +55,7 @@ const Register = () => {
         }
         try {
             const response = await axios.post(REGISTER_URL,
-                JSON.stringify({ user, pwd }),
+                JSON.stringify({ user, email, pwd }),
                 {
                     headers: { 'Content-Type': 'application/json' },
                     withCredentials: true
@@ -73,7 +73,7 @@ const Register = () => {
         } catch (err) {
             if (!err?.response) {
                 setErrMsg('No Server Response');
-            } else if (err.response?.status === 409) {
+            } else if (err.response?.status === 400) {
                 setErrMsg('Username Taken');
             } else {
                 setErrMsg('Registration Failed')
@@ -144,7 +144,6 @@ const Register = () => {
                             Must include uppercase and lowercase letters, a number and a special character.<br />
                             Allowed special characters: <span aria-label="exclamation mark">!</span> <span aria-label="at symbol">@</span> <span aria-label="hashtag">#</span> <span aria-label="dollar sign">$</span> <span aria-label="percent">%</span>
                         </p>
-
 
                         <label htmlFor="confirm_pwd">
                             Confirm Password:

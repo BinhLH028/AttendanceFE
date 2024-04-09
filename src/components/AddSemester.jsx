@@ -26,6 +26,11 @@ const AddSemester = () => {
       key: "courseName",
     },
     {
+      title: "Nhóm",
+      dataIndex: "team",
+      key: "team",
+    },
+    {
       title: "Giảng viên",
       dataIndex: "teacherList",
       key: "teacherList",
@@ -103,13 +108,14 @@ const AddSemester = () => {
         // If not cached, fetch student list from server
         let students = []
         try {
-          const response = await axiosPrivate.get(`/teacher_teach`, {
+          const response = await axiosPrivate.get(`/student_enrolled`, {
             params: { id: courseId },
           });
 
           students = response.data.map((student, index) => {
             return {
-              ...students,
+              ...student,
+              // username: student.username,
               dob: student.dob.substring(0, 10),
               no: index + 1,
             };
@@ -131,7 +137,7 @@ const AddSemester = () => {
 
   const getStudents = async () => {
     try {
-      const response = await axiosPrivate.get("/teacher/all");
+      const response = await axiosPrivate.get("/student/all");
       if (response) {
         setStudentList(response.data.body);
         var listData = [];
@@ -170,7 +176,6 @@ const AddSemester = () => {
   const getCourseSections = async (value = 1) => {
     setCourseSectionTableData([]);
     setCourseSectionTableLoading(true);
-    getSections();
     try {
       const response = await axiosPrivate.get(
         `/course_section/${value}?page=${courseSectiontableParams.pagination.current - 1
@@ -233,6 +238,11 @@ const AddSemester = () => {
   useEffect(() => {
     getCourseSections(value);
   }, [JSON.stringify(courseSectiontableParams), value])
+
+  useEffect(() => {
+    getSections();
+    getStudents();
+  },[])
 
   return (
     <>

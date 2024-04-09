@@ -42,7 +42,7 @@ function AddStudentModal({
 
     const [selectValue, setSelectValue] = useState([]);
 
-    const handleSelectTeacherChange = (value) => {
+    const handleSelectStudentChange = (value) => {
         console.log('selected' + value);
         setSelectValue(value);
         setDisableSubmitButton(false);
@@ -63,18 +63,18 @@ function AddStudentModal({
                     label: student.username,
                     value: student.userId,
                 }))}
-                onChange={handleSelectTeacherChange}
+                onChange={handleSelectStudentChange}
             />
         );
     };
 
     const handleSubmitButton = async () => {
         setLoading(true);
-        let submitValues = { teacherIds: [...selectValue], courseSection: selectedCourse };
+        let submitValues = { studentIds: [...selectValue], courseSectionId: selectedCourse };
         try {
-            const response = await axiosPrivate.post("/teacher_teach/update", submitValues);
+            const response = await axiosPrivate.post("/student_enrolled/update", submitValues);
             if (response.status === 200) {
-                showSuccessMessage("Them giang vien thành công!");
+                showSuccessMessage("Thêm sinh viên thành công!");
             }
             onClose();
             setLoading(false);
