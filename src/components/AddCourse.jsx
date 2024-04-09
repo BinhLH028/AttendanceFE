@@ -21,8 +21,8 @@ const AddCourse = () => {
   const courseTableColumns = [
     {
       title: "No.",
-      dataIndex: "no",
-      key: "no",
+      dataIndex: "index",
+      key: "index",
     },
     {
       title: "Mã lớp học",
@@ -53,8 +53,8 @@ const AddCourse = () => {
   const courseSectionTableColumns = [
     {
       title: "No.",
-      dataIndex: "no",
-      key: "no",
+      dataIndex: "index",
+      key: "index",
     },
     {
       title: "Mã lớp học",
@@ -114,7 +114,7 @@ const AddCourse = () => {
   const [courseSectiontableParams, setCourseSectionTableParams] = useState({
     pagination: {
       current: 1,
-      pageSize: 10,
+      pageSize: 2,
     },
   });
 
@@ -261,8 +261,8 @@ const AddCourse = () => {
     try {
       // setLoading(true);
       const response = await axiosPrivate.get("/course/all");
-      let courseList = response.data.body.map((course) => {
-        return { ...course, value: course.courseId, label: course.courseCode };
+      let courseList = response.data.body.map((course, index) => {
+        return { index: index + 1,...course, value: course.courseId, label: course.courseCode };
       });
       setCourseTableData(courseList);
     } catch (error) {
@@ -298,7 +298,7 @@ const AddCourse = () => {
         }`
       );
       if (response)
-        response.data.body.content.map((res) => {
+        response.data.body.content.map((res, index) => {
           let courseSection = {};
           const flatten = (source, prefix = "") => {
             for (const key in source) {
@@ -322,6 +322,7 @@ const AddCourse = () => {
             teacherList = teacherList.slice(1, teacherList.length);
           }
           courseSection = {
+            index: index + 1,
             ...courseSection,
             teacherList,
           };
@@ -350,7 +351,7 @@ const AddCourse = () => {
         var listData = [];
         response.data.body.map((res) => {
           listData.push({
-            label: res.username,
+            label: res.userName,
             value: res.userId,
           });
         });
@@ -609,8 +610,6 @@ const AddCourse = () => {
                   max={new Date().getFullYear()} // Minimum value set to 1 greater than the "from" year
                   value={toYear}
                   onChange={handleToYearChange}
-                // formatter={value => `${value}`}
-                // parser={value => value.replace('-', '')}
                 />
               </Form.Item>
             </Form.Item>
@@ -755,7 +754,7 @@ const AddCourse = () => {
               loading={courseTableLoading}
               // onChange={handleCourseTableChange}
               scroll={{
-                y: 100,
+                y: 250,
               }}
             />
           </div>

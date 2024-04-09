@@ -26,9 +26,14 @@ function AddStudentModal({
             key: "no",
         },
         {
+            title: "Msv",
+            dataIndex: "userCode",
+            key: "userCode",
+        },
+        {
             title: "Tên sinh vien",
-            dataIndex: "username",
-            key: "username",
+            dataIndex: "userName",
+            key: "userName",
         },
         {
             title: "Ngày sinh",
@@ -61,7 +66,7 @@ function AddStudentModal({
                 style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
                 placeholder="Please select"
                 options={studentList.map((student) => ({
-                    label: student.username,
+                    label: student.userName,
                     value: student.userId,
                 }))}
                 onChange={handleSelectStudentChange}

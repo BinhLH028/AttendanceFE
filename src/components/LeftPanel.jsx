@@ -5,7 +5,7 @@ import "./../style/LeftPanelStyle.css";
 import LoadingScreen from './LoadingScreen';
 import useAuth from "./hooks/useAuth";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
-import { PoweroffOutlined } from '@ant-design/icons';
+import { PoweroffOutlined, UserOutlined } from '@ant-design/icons';
 import useLogout from "./hooks/useLogout";
 import { showErrorMessage } from "../util/toastdisplay";
 import { Menu } from "antd";
@@ -166,6 +166,10 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
         navigate("/login", { replace: true });
     }
 
+    const handleUserManagement = () => {
+        navigate("/user-management", { replace: true });
+    }
+
     const onOpenChange = (keys) => {
         const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
         if (latestOpenKey && rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
@@ -260,14 +264,11 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                             items={items}
                         />
                     )}
-
-
-
-
-
             </div>
-            <div style={{ height: '5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <PoweroffOutlined style={{ fontSize: '2rem', cursor: 'pointer' }} onClick={handleLogout} />
+            
+            <div style={{ height: '10rem', width: '100%', display: 'flex',flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <UserOutlined style={{height:'5rem', width: '100%', fontSize: '2rem',justifyContent:'center', cursor: 'pointer' }} onClick={handleUserManagement} />
+                <PoweroffOutlined style={{height:'5rem', width: '100%', fontSize: '2rem',justifyContent:'center', cursor: 'pointer' }} onClick={handleLogout} />
             </div>
         </div>
     )

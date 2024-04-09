@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button, Form, Input, InputNumber, Select, Table, message, Upload, Skeleton } from "antd";
 import './../style/AddSemester.css';
 import AddStudentModal from './AddStudentModal';
+import { UploadOutlined } from '@ant-design/icons';
 import { showErrorMessage, showSuccessMessage } from '../util/toastdisplay';
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 
@@ -12,8 +13,8 @@ const AddSemester = () => {
   const courseSectionTableColumns = [
     {
       title: "No.",
-      dataIndex: "no",
-      key: "no",
+      dataIndex: "index",
+      key: "index",
     },
     {
       title: "Mã lớp học",
@@ -116,6 +117,7 @@ const AddSemester = () => {
             return {
               ...student,
               // username: student.username,
+              userCode: student.userCode,
               dob: student.dob.substring(0, 10),
               no: index + 1,
             };
@@ -143,7 +145,7 @@ const AddSemester = () => {
         var listData = [];
         response.data.body.map((res) => {
           listData.push({
-            label: res.username,
+            label: res.userName,
             value: res.userId,
           });
         });
@@ -182,7 +184,7 @@ const AddSemester = () => {
         }`
       );
       if (response)
-        response.data.body.content.map((res) => {
+        response.data.body.content.map((res, index) => {
           let courseSection = {};
           const flatten = (source, prefix = "") => {
             for (const key in source) {
@@ -207,6 +209,7 @@ const AddSemester = () => {
             }
           }
           courseSection = {
+            index: index + 1,
             ...courseSection,
             teacherList,
           };
@@ -235,6 +238,60 @@ const AddSemester = () => {
     setValue(value);
   };
 
+  function isJSONString(str) {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  const uploadEnroll = async ({ file, onSuccess, onError }) => {
+    // Create a FormData object to hold the file and additional parameter
+    const formData = new FormData();
+    formData.append('file', file); // Append the file
+    formData.append('sectionId', value)
+    try {
+      // Simulate API call to upload file with additional parameter
+      const response = await axiosPrivate.post('/student_enrolled/upload', formData, {
+        headers: {
+          "Custom-Header": "value",
+          "Content-type": "multipart/form-data",
+        }
+      });
+
+      if (response.status === 200) {
+        showSuccessMessage(response.data);
+        getCourseSections(value);
+        onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
+      } else {
+        showErrorMessage(response.data.body);
+        onError(new Error('Upload failed')); // Call onError callback provided by Ant Design Upload component
+      }
+    } catch (error) {
+      if (isJSONString(error.request.response)) {
+        const temp = JSON.parse(error.request.response);
+        showErrorMessage(temp.join("\n"));
+      } else {
+        showErrorMessage(error.request.response);
+      }
+      onError(error); // Call onError callback provided by Ant Design Upload component
+    }
+  };
+
+  const propsCourse = {
+    beforeUpload: (file) => {
+      const isCSV = file.name.toLowerCase().endsWith('.csv');
+      if (!isCSV) {
+        message.error(`${file.name} không đúng định dạng CSV `);
+      }
+      return isCSV || Upload.LIST_IGNORE;
+    },
+    multiple: false,
+    customRequest: uploadEnroll
+  };
+
   useEffect(() => {
     getCourseSections(value);
   }, [JSON.stringify(courseSectiontableParams), value])
@@ -242,41 +299,53 @@ const AddSemester = () => {
   useEffect(() => {
     getSections();
     getStudents();
-  },[])
+  }, [])
 
   return (
     <>
-      {sectionOptions.length ?
-        <Select
-          allowClear
-          style={{
-            width: "20%",
-            margin: "10px",
-          }}
-          placeholder="Chọn học kỳ"
-          onChange={handleChange}
-          options={sectionOptions}
-          defaultValue={sectionOptions[0]}
-        /> :
-        <Skeleton.Input active={true} size="large" />
-      }
-      <Table
-        columns={courseSectionTableColumns}
-        dataSource={courseSectionTableData}
-        pagination={courseSectiontableParams.pagination}
-        loading={courseSectionTableLoading}
-        onChange={handleCourseSectionTableChange}
-        rowKey={(record) => record.id}
-      />
-      <AddStudentModal
-        studentList={studentList}
-        show={showModal}
-        onClose={handleCloseModalDetail}
-        selectedCourse={selectedCourseSection}
-        courseSectionStudentList={courseSectionStudentList}
-        setCourseSectionStudentList={setCourseSectionStudentList}
-        getCourseSections={getCourseSections}
-      />
+      <div className="h-screen grid grid-cols-10 grid-rows-4 gap-4 rounded-xl mr-5">
+        <div className="col-span-10 row-span-full col-start-0 bg-gray-50 rounded-xl flex flex-col justify-start items-center">
+          {sectionOptions.length ?
+            <div >
+              <Select className="w-full"
+                allowClear
+                style={{
+                  width: "auto",
+                  margin: "10px",
+                }}
+                placeholder="Chọn học kỳ"
+                onChange={handleChange}
+                options={sectionOptions}
+                defaultValue={sectionOptions[0]}
+              />
+
+              <Upload {...propsCourse} style={{ display: "inline-block" }}>
+                <Button icon={<UploadOutlined />}>Upload danh sách sinh viên</Button>
+              </Upload>
+            </div>  :
+              <Skeleton.Input active={true} size="large" />
+          }
+          <div className="overflow-x-auto whitespace-no-wrap w-full">
+            <Table
+              columns={courseSectionTableColumns}
+              dataSource={courseSectionTableData}
+              pagination={courseSectiontableParams.pagination}
+              loading={courseSectionTableLoading}
+              onChange={handleCourseSectionTableChange}
+              rowKey={(record) => record.id}
+            />
+          </div>
+          <AddStudentModal
+            studentList={studentList}
+            show={showModal}
+            onClose={handleCloseModalDetail}
+            selectedCourse={selectedCourseSection}
+            courseSectionStudentList={courseSectionStudentList}
+            setCourseSectionStudentList={setCourseSectionStudentList}
+            getCourseSections={getCourseSections}
+          />
+        </div>
+      </div>
     </>
   );
 };

@@ -27,8 +27,8 @@ function AddTeacherModal({
     },
     {
       title: "Tên giảng viên",
-      dataIndex: "username",
-      key: "username",
+      dataIndex: "userName",
+      key: "userName",
     },
     {
       title: "Ngày sinh",
@@ -61,7 +61,7 @@ function AddTeacherModal({
         style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
         placeholder="Please select"
         options={teacherList.map((teacher) => ({
-          label: teacher.username,
+          label: teacher.userName,
           value: teacher.userId,
         }))}
         onChange={handleSelectTeacherChange}

@@ -12,6 +12,7 @@ import PersistLogin from './components/PersistLogin';
 import AddCourse from './components/AddCourse';
 import AddSemester from './components/AddSemester';
 import Manage from './components/Manage';
+import UserManagement from './components/UserManagement';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
               <Route path='cs/:id/*' element={<Home />} />
               <Route path='course' element={<Home> <AddCourse/> </Home>} />
               <Route path='semester/*' element={<Home> <AddSemester/> </Home>} />
+              <Route path='user-management/*' element={<Home> <UserManagement/> </Home>} />
             </Route>
             <Route path='/' element={<RequireAuth allowedRoles={["TEACHER", "ADMIN"]} />}>
               <Route path='manage' element={<Home><Manage /> </Home>} />
