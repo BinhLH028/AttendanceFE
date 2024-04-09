@@ -24,7 +24,7 @@ function App() {
               <Route path='attend-successfull/:name/*' index element={<AttendSuccess />}/>
               <Route path='cs/:id/*' element={<Home />} />
               <Route path='course' element={<Home> <AddCourse/> </Home>} />
-              <Route path='semester' element={<Home> <AddSemester/> </Home>} />
+              <Route path='semester/*' element={<Home> <AddSemester/> </Home>} />
             </Route>
             <Route path='/' element={<RequireAuth allowedRoles={["TEACHER", "ADMIN"]} />}>
               <Route path='manage' element={<Home><Manage /> </Home>} />
