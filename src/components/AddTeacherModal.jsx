@@ -15,9 +15,12 @@ function AddTeacherModal({
   selectedCourse,
   courseSectionTeacherList,
   setCourseSectionTeacherList,
-  getCourseSections
+  getCourseSections,
+  setShowModal
 }) {
   const [selectedValues, setSelectedValues] = useState([]);
+
+  const [form] = Form.useForm();
 
   const columns = [
     {
@@ -43,40 +46,65 @@ function AddTeacherModal({
 
   const [selectValue, setSelectValue] = useState([]);
 
+  let defaultTeacherList = [];
+
   const handleSelectTeacherChange = (value) => {
-    console.log('selected' + value);
+    // console.log('selected' + value);
     setSelectValue(value);
     setDisableSubmitButton(false);
   };
 
   const tableFooter = () => {
     return (
-      <Select
-        value={selectValue}
-        required
-        optionFilterProp="label"
-        showSearch
-        mode="multiple"
-        allowClear
-        style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
-        placeholder="Please select"
-        options={teacherList.map((teacher) => ({
-          label: teacher.userName,
-          value: teacher.userId,
-        }))}
-        onChange={handleSelectTeacherChange}
-      />
+      <Form
+        id='selectTeacherForm'
+        form={form}
+        onFinish={handleSubmitButton}
+      >
+        <Form.Item
+          label="Danh sach giang vien :"
+          name="teacherList"
+          rules={[
+            {
+              required: true,
+              message: 'Please input!',
+            },
+          ]}
+          initialValue={defaultTeacherList}
+        >
+          <Select
+            // value={selectValue}
+            required
+            optionFilterProp="label"
+            showSearch
+            mode="multiple"
+            allowClear
+            style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
+            placeholder="Please select"
+            options={teacherList.map((teacher) => ({
+              label: teacher.userName,
+              value: teacher.userId,
+            }))}
+            onChange={handleSelectTeacherChange}
+          />
+        </Form.Item>
+      </Form>
     );
   };
 
-  const handleSubmitButton = async () => {
+  const handleSubmitButton = async (value) => {
     setLoading(true);
-    let submitValues = { teacherIds: [...selectValue], courseSectionId: selectedCourse };
+    let submitValues = { teacherIds: value.teacherList, courseSectionId: selectedCourse };
+    // console.log(value, submitValues);
     try {
-      const response = await axiosPrivate.post("/teacher_teach/update", submitValues);
+      let response;
+      if (courseSectionTeacherList[selectedCourse].length === 0)
+        response = await axiosPrivate.post("/teacher_teach/new", submitValues);
+      else
+        response = await axiosPrivate.post("/teacher_teach/update", submitValues);
       if (response.status === 200) {
         showSuccessMessage("Them giang vien thành công!");
-        setCourseSectionTeacherList(selectValue);
+        setCourseSectionTeacherList(value.teacherList);
       }
       onClose();
       setLoading(false);
@@ -84,28 +112,38 @@ function AddTeacherModal({
     } catch (error) {
       console.log(error);
       showErrorMessage(error);
+      setLoading(false);
     }
   }
 
   useEffect(() => {
     if (selectedCourse) {
-      setSelectValue(courseSectionTeacherList[selectedCourse]?.map((teacher) => teacher.userId));
+      // form.resetFields();
+      form.setFieldValue('teacherList', courseSectionTeacherList[selectedCourse]?.map((teacher) => teacher.userId));
       setDisableSubmitButton(true);
     }
-  }, [selectedCourse])
+  }, [selectedCourse, courseSectionTeacherList])
+
+  const handleCloseModal = () => {
+    // form.resetFields();
+    form.setFieldValue('teacherList', courseSectionTeacherList[selectedCourse]?.map((teacher) => teacher.userId));
+    setShowModal(false);
+    setDisableSubmitButton(true);
+    // onClose();
+  }
 
   return (
     <>
       <Modal
         show={show}
-        onHide={onClose}
+        onHide={handleCloseModal}
         dialogClassName="custom-modal"
         centered
         size="xl"
         // fullscreen="sm-down"
         backdrop="static"
       >
-        <Modal.Header closeButton>
+        <Modal.Header closeButton={handleCloseModal}>
           <Modal.Title>Course detail</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -125,10 +163,10 @@ function AddTeacherModal({
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" loading={loading} onClick={handleSubmitButton} disabled={disableSubmitButton}>
+          <Button form="selectTeacherForm" key='submit' htmlType="submit" variant="primary" loading={loading} disabled={disableSubmitButton}>
             Submit
           </Button>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={handleCloseModal}>
             Close
           </Button>
         </Modal.Footer>

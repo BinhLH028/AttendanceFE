@@ -794,6 +794,7 @@ const AddCourse = () => {
         teacherList={teacherList}
         show={showModal}
         onClose={handleCloseModalDetail}
+        setShowModal={setShowModal}
         selectedCourse={selectedCourseSection}
         courseSectionTeacherList={courseSectionTeacherList}
         setCourseSectionTeacherList={setCourseSectionTeacherList}
