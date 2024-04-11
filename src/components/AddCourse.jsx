@@ -452,7 +452,7 @@ const AddCourse = () => {
           teachers = response.data.map((teacher, index) => {
             return {
               ...teacher,
-              dob: teacher.dob.substring(0, 10),
+              dob: teacher.dob.substring(0, 10).split('-').reverse().join('-'),
               no: index + 1,
             };
           });
@@ -473,17 +473,6 @@ const AddCourse = () => {
 
   const handleChange = (value) => {
     setValue(value);
-  };
-
-  const onCellEditCommit = (params) => {
-    // params contains information about the edited cell
-    console.log("Edited Cell:", params);
-
-    // Access the entire row using params.row
-    console.log("Entire Row:", params.row);
-
-    // Store the edited cell for further use if needed
-    setEditedCell(params);
   };
 
   useEffect(() => {
