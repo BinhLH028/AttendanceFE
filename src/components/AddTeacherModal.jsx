@@ -1,7 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-// import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-// import { Table } from 'antd';
 import { Descriptions, Form, Popconfirm, Select, Table, message, Button } from "antd";
 import "../style/Modal.css";
 import { useEffect, useRef, useState } from "react";
@@ -49,7 +47,6 @@ function AddTeacherModal({
   let defaultTeacherList = [];
 
   const handleSelectTeacherChange = (value) => {
-    // console.log('selected' + value);
     setSelectValue(value);
     setDisableSubmitButton(false);
   };
@@ -73,7 +70,6 @@ function AddTeacherModal({
           initialValue={defaultTeacherList}
         >
           <Select
-            // value={selectValue}
             required
             optionFilterProp="label"
             showSearch

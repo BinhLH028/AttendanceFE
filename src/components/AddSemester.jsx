@@ -339,6 +339,7 @@ const AddSemester = () => {
             studentList={studentList}
             show={showModal}
             onClose={handleCloseModalDetail}
+            setShowModal={setShowModal}
             selectedCourse={selectedCourseSection}
             courseSectionStudentList={courseSectionStudentList}
             setCourseSectionStudentList={setCourseSectionStudentList}

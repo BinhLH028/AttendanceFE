@@ -1,15 +1,142 @@
 import React, { useState, useEffect } from 'react';
 import LoadingScreen from './LoadingScreen';
 import useAuth from "./hooks/useAuth";
-import { Button, Form, Input, InputNumber, Select, Table, message, Upload } from "antd";
+import { Button, Form, Input, DatePicker, InputNumber, Typography , Table, message, Upload, Popconfirm } from "antd";
 import { UploadOutlined } from '@ant-design/icons';
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 import { showErrorMessage, showSuccessMessage } from '../util/toastdisplay';
+
+const EditableCell = ({
+    editing,
+    dataIndex,
+    title,
+    inputType,
+    record,
+    index,
+    children,
+    ...restProps
+}) => {
+    const inputNode = dataIndex === 'dob' ? <DatePicker format={"DD-MM-YYYY"}/> : <Input style={{ width: '115px', height: '25px' }} />;
+    return (
+        <td {...restProps}>
+            {editing ? (
+                <Form.Item
+                    name={dataIndex}
+                    style={{
+                        margin: 0,
+                    }}
+                    rules={[
+                        {
+                            required: true,
+                            message: `Please Input ${title}!`,
+                        },
+                    ]}
+                >
+                    {inputNode}
+                </Form.Item>
+            ) : (
+                children
+            )}
+        </td>
+    );
+};
 
 
 const UserManagement = () => {
 
     const axiosPrivate = useAxiosPrivate();
+
+    const [form1] = Form.useForm();
+    const [form2] = Form.useForm();
+    //teacher
+    const [editingTeacherKey, setEditingTeacherKey] = useState('');
+    const isEditingTeacher = (record) => record.userId === editingTeacherKey;
+    //student
+    const [editingStudentKey, setEditingStudentKey] = useState('');
+    const isEditingStudent = (record) => record.userId === editingStudentKey;
+
+    const editTeacher = (record) => {
+        form1.setFieldsValue({
+            userName: '',
+            phone: '',
+            department: '',
+            ...record,
+        });
+        setEditingTeacherKey(record.userId);
+    };
+
+    const editStudent = (record) => {
+        form2.setFieldsValue({
+            userName: '',
+            phone: '',
+            schoolYear: '',
+            ...record,
+        });
+        setEditingStudentKey(record.userId);
+    };
+
+    const cancelTeacher = () => {
+        setEditingTeacherKey('');
+    };
+
+    const cancelStudent = () => {
+        setEditingStudentKey('');
+    };
+
+
+    const saveTeacher = async (key) => {
+        try {
+            const row = await form1.validateFields();
+            const newData = [...teacherTableData];
+            const index = newData.findIndex((item) => {
+                return key === item.userId
+            });
+            if (index > -1) {
+                const item = newData[index];
+                newData.splice(index, 1, {
+                    ...item,
+                    ...row,
+                });
+                setTeacherTableData(newData);
+                updateUserInfo(newData[index],true);
+                setEditingTeacherKey('');
+            } else {
+                newData.push(row);
+                setTeacherTableData(newData);
+                updateUserInfo(newData[index],true);
+                setEditingTeacherKey('');
+            }
+        } catch (errInfo) {
+            console.log('Validate Failed:', errInfo);
+        }
+    };
+
+    const saveStudent = async (key) => {
+        try {
+            const row = await form2.validateFields();
+            const newData = [...studentTableData];
+            const index = newData.findIndex((item) => {
+                return key === item.userId
+            });
+            if (index > -1) {
+                const item = newData[index];
+                newData.splice(index, 1, {
+                    ...item,
+                    ...row,
+                });
+                setStudentTableData(newData);
+                updateUserInfo(newData[index],false);
+                setEditingStudentKey('');
+            } else {
+                newData.push(row);
+                setStudentTableData(newData);
+                updateUserInfo(newData[index],false);
+                setEditingStudentKey('');
+            }
+        } catch (errInfo) {
+            console.log('Validate Failed:', errInfo);
+        }
+    };
 
     function isJSONString(str) {
         try {
@@ -20,27 +147,35 @@ const UserManagement = () => {
         }
     }
 
+
+
     //#region teacher
     const teacherTableColumns = [
         {
             title: "No.",
             dataIndex: "index",
+            width: "25px",
             key: "index",
         },
         {
             title: "Họ và tên",
             dataIndex: "userName",
             key: "userName",
+            width: "135px",
+            editable: true,
         },
         {
             title: "Email",
             dataIndex: "email",
+            width: "150px",
             key: "email",
         },
         {
             title: "Số điện thoại",
             dataIndex: "phone",
             key: "phone",
+            width: "125px",
+            editable: true,
         },
         {
             title: "Ngày sinh",
@@ -51,22 +186,51 @@ const UserManagement = () => {
             title: "Khoa",
             dataIndex: "department",
             key: "department",
+            editable: true,
         },
-        // {
-        //   title: "Action",
-        //   render: (_, course) =>
-        //     courseSectionTableData.length >= 1 ? (
-        //       <Button
-        //         type="primary"
-        //         shape="circle"
-        //         className="bg-[#1677ff]"
-        //         onClick={() => handleShowAddStudentModal(course)}
-        //       >
-        //         +
-        //       </Button>
-        //     ) : null,
-        // },
+        {
+            title: 'operation',
+            dataIndex: 'operation',
+            render: (_, record) => {
+                const editable = isEditingTeacher(record);
+                return editable ? (
+                    <span>
+                        <Typography.Link
+                            onClick={() => saveTeacher(record.userId)}
+                            style={{
+                                marginRight: 8,
+                            }}
+                        >
+                            Save
+                        </Typography.Link>
+                        <Popconfirm title="Sure to cancel?" onConfirm={cancelTeacher}>
+                            <a>Cancel</a>
+                        </Popconfirm>
+                    </span>
+                ) : (
+                    <Typography.Link disabled={editingTeacherKey !== ''} onClick={() => editTeacher(record)}>
+                        Edit
+                    </Typography.Link>
+                );
+            },
+        },
     ];
+
+    const mergeTeacherColumns = teacherTableColumns.map((col) => {
+        if (!col.editable) {
+          return col;
+        }
+        return {
+          ...col,
+          onCell: (record) => ({
+            record,
+            inputType: col.dataIndex === 'age' ? 'number' : 'text',
+            dataIndex: col.dataIndex,
+            title: col.title,
+            editing: isEditingTeacher(record),
+          }),
+        };
+      });
 
     const uploadTeacher = async ({ file, onSuccess, onError }) => {
         // Create a FormData object to hold the file and additional parameter
@@ -124,7 +288,7 @@ const UserManagement = () => {
     const generateInputsTeacherTable = (columns) => {
         const inputs = [];
         columns.forEach(column => {
-            if (column.dataIndex !== 'index') {
+            if (column.dataIndex !== 'index' && column.dataIndex !== 'operation') {
                 inputs.push(
                     <Input
                         key={column.key}
@@ -227,6 +391,7 @@ const UserManagement = () => {
             title: "Họ và tên",
             dataIndex: "userName",
             key: "userName",
+            editable: true,
         },
         {
             title: "Email",
@@ -242,27 +407,57 @@ const UserManagement = () => {
             title: "Số điện thoại",
             dataIndex: "phone",
             key: "phone",
+            editable: true,
         },
         {
             title: "Khoá",
             dataIndex: "schoolYear",
             key: "schoolYear",
+            editable: true,
         },
-        // {
-        //   title: "Action",
-        //   render: (_, course) =>
-        //     courseSectionTableData.length >= 1 ? (
-        //       <Button
-        //         type="primary"
-        //         shape="circle"
-        //         className="bg-[#1677ff]"
-        //         onClick={() => handleShowAddStudentModal(course)}
-        //       >
-        //         +
-        //       </Button>
-        //     ) : null,
-        // },
+        {
+            title: 'operation',
+            dataIndex: 'operation',
+            render: (_, record) => {
+                const editable = isEditingStudent(record);
+                return editable ? (
+                    <span>
+                        <Typography.Link
+                            onClick={() => saveStudent(record.userId)}
+                            style={{
+                                marginRight: 8,
+                            }}
+                        >
+                            Save
+                        </Typography.Link>
+                        <Popconfirm title="Sure to cancel?" onConfirm={cancelStudent}>
+                            <a>Cancel</a>
+                        </Popconfirm>
+                    </span>
+                ) : (
+                    <Typography.Link disabled={editingStudentKey !== ''} onClick={() => editStudent(record)}>
+                        Edit
+                    </Typography.Link>
+                );
+            },
+        },
     ];
+
+    const mergeStudentColumns = studentTableColumns.map((col) => {
+        if (!col.editable) {
+          return col;
+        }
+        return {
+          ...col,
+          onCell: (record) => ({
+            record,
+            inputType: col.dataIndex === 'age' ? 'number' : 'text',
+            dataIndex: col.dataIndex,
+            title: col.title,
+            editing: isEditingStudent(record),
+          }),
+        };
+      });
 
     const uploadStudent = async ({ file, onSuccess, onError }) => {
         // Create a FormData object to hold the file and additional parameter
@@ -315,7 +510,7 @@ const UserManagement = () => {
     const generateInputsStudentTable = (columns) => {
         const inputs = [];
         columns.forEach(column => {
-            if (column.dataIndex !== 'index') {
+            if (column.dataIndex !== 'index' && column.dataIndex !== 'operation') {
                 inputs.push(
                     <Input
                         key={column.key}
@@ -414,14 +609,31 @@ const UserManagement = () => {
         }
     };
     //#endregion
+    
+    const updateUserInfo = async (item,isTeacher) => {
+        try {
+            console.log(item);
+            let response;
+            if (isTeacher)
+                response = await axiosPrivate.post(`/user/update/${item.userId}?type=t`, item);
+            else {
+                response = await axiosPrivate.post(`/user/update/${item.userId}?type=u`, item);
+            }
+            showSuccessMessage(response.data.body)
+        } catch (error) {
+            showErrorMessage(error);
+        }
+    }
+    
     useEffect(() => {
     }, []);
+
 
     return (
         <>
             <div className="h-screen grid grid-cols-10 grid-rows-4 gap-4 rounded-xl mr-5">
                 <div className="col-span-10 row-span-full col-start-0 bg-gray-50 rounded-xl flex flex-col justify-start items-center">
-                    <div className="flex flex-row justify-between w-full h-full  p-2">
+                    <div className="flex flex-row justify-between w-full h-full ">
                         <div className="overflow-x-auto whitespace-no-wrap w-[calc(50%-2.5px)] bg-red-300 ">
                             <div className=" bg-gray-100 p-2 rounded-xl ">
                                 {inputTeachers}
@@ -429,15 +641,23 @@ const UserManagement = () => {
                                     <Button icon={<UploadOutlined />}>Upload danh sách giảng viên</Button>
                                 </Upload>
                             </div>
+                            <Form form={form1} component={false}>
                             <Table
-                                columns={teacherTableColumns}
+                                components={{
+                                    body: {
+                                    cell: EditableCell,
+                                    },
+                                }}
+                                columns={mergeTeacherColumns}
                                 dataSource={teacherTableData}
                                 pagination={teacherTableParams.pagination}
                                 loading={teacherTableLoading}
                                 onChange={handleTeacherTableChange}
-                                rowKey={(record) => record.id}
+                                rowClassName="editable-row"
+                                rowKey='userId'
                                 size="small"
                             />
+                            </Form>
                         </div>
                         <div className="w-[calc(50%-2.5px)] bg-blue-300 ">
                             <div className=" bg-gray-100 p-2 rounded-xl ">
@@ -446,15 +666,24 @@ const UserManagement = () => {
                                     <Button icon={<UploadOutlined />}>Upload sinh viên</Button>
                                 </Upload>
                             </div>
+                            <Form form={form2} component={false}>
+
                             <Table
-                                columns={studentTableColumns}
+                                components={{
+                                    body: {
+                                    cell: EditableCell,
+                                    },
+                                }}
+                                columns={mergeStudentColumns}
                                 dataSource={studentTableData}
                                 pagination={studentTableParams.pagination}
                                 loading={studentTableLoading}
                                 onChange={handleStudentTableChange}
-                                rowKey={(record) => record.id}
+                                rowClassName="editable-row"
+                                rowKey='userId'
                                 size="small"
                             />
+                            </Form>
                         </div>
                     </div>
                 </div>

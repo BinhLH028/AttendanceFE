@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
 import AddTeacherModal from "./AddTeacherModal";
+import MultiSelectWithPagination from "./MultiSelectWithPagination";
 
 const MAX_COUNT = 5;
 
@@ -13,6 +14,8 @@ const AddCourse = () => {
   const [form1] = Form.useForm();
 
   const [form2] = Form.useForm();
+
+  const [form3] = Form.useForm();
 
   const [teacherOptions, setTeacherOptions] = useState([]);
 
@@ -114,14 +117,14 @@ const AddCourse = () => {
   const [courseSectiontableParams, setCourseSectionTableParams] = useState({
     pagination: {
       current: 1,
-      pageSize: 2,
+      pageSize: 10,
     },
   });
 
   const [coursetableParams, setCourseTableParams] = useState({
     pagination: {
       current: 1,
-      pageSize: 3,
+      pageSize: 5,
     },
   });
 
@@ -262,7 +265,7 @@ const AddCourse = () => {
       // setLoading(true);
       const response = await axiosPrivate.get("/course/all");
       let courseList = response.data.body.map((course, index) => {
-        return { index: index + 1,...course, value: course.courseId, label: course.courseCode };
+        return { index: index + 1, ...course, value: course.courseId, label: course.courseCode };
       });
       setCourseTableData(courseList);
     } catch (error) {
@@ -312,15 +315,15 @@ const AddCourse = () => {
           flatten(res);
           let teacherList = "";
           if (res.teacherName != null || res.teacherName != undefined)
-          if (res.teacherName.length <= 1) {
-            teacherList = res.teacherName[0].userName;
-          } else {
-            teacherList = res.teacherName.reduce((acc, teacher) => {
-              return acc + ", " + teacher.userName;
-            }, "");
-            // console.log(teacherList);
-            teacherList = teacherList.slice(1, teacherList.length);
-          }
+            if (res.teacherName.length <= 1) {
+              teacherList = res.teacherName[0].userName;
+            } else {
+              teacherList = res.teacherName.reduce((acc, teacher) => {
+                return acc + ", " + teacher.userName;
+              }, "");
+              // console.log(teacherList);
+              teacherList = teacherList.slice(1, teacherList.length);
+            }
           courseSection = {
             index: index + 1,
             ...courseSection,
@@ -392,9 +395,32 @@ const AddCourse = () => {
     }
   };
 
+  const onCourseSectionFinish = async (values) => {
+
+    try {
+      console.log(values);
+      const data = { ...values, sectionId: value }
+      const response = await axiosPrivate.post("/course_section/create", data);
+      if (response.status === 200) {
+        showSuccessMessage("Tạo khóa học thành công!");
+      }
+      form3.resetFields();
+      getCourseSections();
+      setLoadings([]);
+    } catch (error) {
+      showErrorMessage(error.request.response);
+    }
+  };
+
   function isFieldsTouched() {
     return (
       form1.isFieldTouched("semester") && form1.isFieldTouched("startYear") && form1.isFieldTouched("endYear")
+    );
+  }
+
+  function isFieldsTouchedF3() {
+    return (
+      form3.isFieldTouched("courseId") && form3.isFieldTouched("teachersId")
     );
   }
 
@@ -536,16 +562,6 @@ const AddCourse = () => {
                   message: "Nam hoc không được trống!",
                 },
               ]}
-            // rules={[
-            //   {
-            //     validator: (_, value) => {
-            //       if (!value || value.length !== 2 || value[0] + 1 !== value[1]) {
-            //         return Promise.reject('Hãy chọn khoảng thời gian phù hợp.');
-            //       }
-            //       return Promise.resolve();
-            //     },
-            //   },
-            // ]}
             >
               <Form.Item
                 name="startYear"
@@ -566,8 +582,6 @@ const AddCourse = () => {
                   max={new Date().getFullYear() - 1} // Adjusted max value to allow only up to the year before the current year
                   value={fromYear}
                   onChange={handleFromYearChange}
-                // formatter={value => `${value}`}
-                // parser={value => value.replace('-', '')}
                 />
               </Form.Item>
               <span
@@ -575,10 +589,10 @@ const AddCourse = () => {
                   display: 'inline-block',
                   width: '24px',
                   lineHeight: '32px',
+                  marginLeft: '-40px',
                   textAlign: 'center',
                 }}
-              >
-                -
+              >-
               </span>
               <Form.Item
                 name="endYear"
@@ -623,7 +637,7 @@ const AddCourse = () => {
                   loading={loadings[0]}
                   onClick={() => enterLoading(0)}
                 >
-                  Submit
+                  Thêm học kỳ
                 </Button>
               )}
             </Form.Item>
@@ -682,24 +696,6 @@ const AddCourse = () => {
               >
                 <Input />
               </Form.Item>
-
-              {/* <Form.Item
-                label="Nhóm"
-                name="team"
-                rules={[
-                  {
-                    required: false,
-                    message: "Nhóm không được trống!",
-                  }
-                ]}
-              >
-                <Select defaultValue="CL">
-                  <Select.Option value="CL">CL</Select.Option>
-                  <Select.Option value="N1">N1</Select.Option>
-                  <Select.Option value="N2">N2</Select.Option>
-                </Select>
-              </Form.Item> */}
-
               <Form.Item
                 wrapperCol={{
                   offset: 8,
@@ -721,14 +717,14 @@ const AddCourse = () => {
                     loading={loadings[1]}
                     onClick={() => enterLoading(1)}
                   >
-                    Submit
+                    Thêm môn học
                   </Button>
                 )}
               </Form.Item>
             </Form>
 
             <div>
-              <p style={{ whiteSpace: "pre-wrap", display: "inline-block", marginRight: "20px" }}>Danh sách lớp môn học</p>
+              <p style={{ whiteSpace: "pre-wrap", display: "inline-block", marginRight: "20px" }}>Danh sách môn học</p>
               <Upload {...propsCourse} style={{ display: "inline-block" }}>
                 <Button icon={<UploadOutlined />}>Upload danh sách môn học</Button>
               </Upload>
@@ -767,7 +763,135 @@ const AddCourse = () => {
           <Upload {...propsCourseSection} style={{ display: "inline-block" }}>
             <Button icon={<UploadOutlined />}>Upload danh sách LMH</Button>
           </Upload>
+          <Form
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 20,
+            }}
+            style={{
+              width: "auto",
+              maxWidth: "1000px",
+              paddingRight: "2rem",
+              zIndex: -10,
+              display: 'flex',
+              flexDirection: 'row',
+            }}
+            initialValues={{
+              remember: true,
+              team: 'CL' // Set default value for the 'team' field here
+            }}
+            onFinish={onCourseSectionFinish}
+            autoComplete="off"
+            form={form3}
+          >
+            <Form.Item
+              label="Mã lớp học"
+              name="courseId"
+              style={{ width: 'auto', margin: '0 1rem' }}
+              rules={[
+                {
+                  required: true,
+                  message: "Mã lớp học không được trống!",
+                },
+              ]}
+            >
+              {sectionOptions.length ?
+                <Select
+                  allowClear
+                  style={{
+                    width: "12rem",
+                  }}
+                  placeholder="Chọn học kỳ"
+                  options={courseTableData}
+                  maxTagCount={5}
+                /> :
+                <Skeleton.Input active={true} size="large" />
+              }
+            </Form.Item>
+            <Form.Item
+              label="Nhóm"
+              name="team"
+              rules={[
+                {
+                  required: false,
+                  message: "Nhóm không được trống!",
+                }
+              ]}
+            >
+              <Select style={{ width: '80%', marginLeft: "10px" }}>
+                <Select.Option value="CL">CL</Select.Option>
+                <Select.Option value="N1">N1</Select.Option>
+                <Select.Option value="N2">N2</Select.Option>
+                <Select.Option value="N3">N3</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              label="Giảng viên"
+              name="teachersId"
+              style={{ width: '25rem', }}
+              rules={[
+                {
+                  required: true,
+                  message: "Giảng viên không được trống!",
+                }
+              ]}
+            >
+              <Select
+              required
+              showSearch
+              mode="multiple"
+              allowClear
+              style={{ width: '100%' }}
+              placeholder="Please select"
+              options={teacherList.map((teacher) => ({
+                value: teacher.userId,
+                label: teacher.userName,
+              }))}
+              filterOption={(input, option) =>
+                option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              maxCount={4}
+            />
+              {/* <MultiSelectWithPagination
+                apiEndpoint="/course_section/1"
+                optionLabelKey="courseCode"
+                optionValueKey="id"
+                pageSize={10}
+                debounceTime={1500}
+                onChange={selectedValues => console.log('Selected:', selectedValues)}
+                style={{ width: '80%', marginLeft: "25px" }}
+              /> */}
+            </Form.Item>
 
+
+            <Form.Item
+              wrapperCol={{
+                offset: 8,
+                span: 16,
+              }}
+              shouldUpdate
+            >
+              {() => (
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  disabled={
+                    !isFieldsTouchedF3(true) ||
+                    form3
+                      .getFieldsError()
+                      .filter(({ errors }) => errors.length).length > 0
+                  }
+                  className="bg-[#1677ff]"
+                  loading={loadings[1]}
+                  onClick={() => enterLoading(1)}
+                >
+                  Thêm lớp môn học
+                </Button>
+              )}
+            </Form.Item>
+          </Form>
           <Table
             columns={courseSectionTableColumns}
             dataSource={courseSectionTableData}
@@ -776,6 +900,7 @@ const AddCourse = () => {
             onChange={handleCourseSectionTableChange}
             rowKey={(record) => record.id}
           />
+
         </div>
       </div>
 

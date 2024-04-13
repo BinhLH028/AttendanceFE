@@ -1,7 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-// import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-// import { Table } from 'antd';
 import { Descriptions, Form, Popconfirm, Select, Table, message, Button } from "antd";
 import "../style/Modal.css";
 import { useEffect, useRef, useState } from "react";
@@ -15,9 +13,12 @@ function AddStudentModal({
     selectedCourse,
     courseSectionStudentList,
     setCourseSectionStudentList,
-    getCourseSections
+    getCourseSections,
+    setShowModal
 }) {
     const [selectedValues, setSelectedValues] = useState([]);
+
+    const [form] = Form.useForm();
 
     const columns = [
         {
@@ -40,6 +41,16 @@ function AddStudentModal({
             dataIndex: "dob",
             key: "dob",
         },
+        {
+            title: "Số điện thoại",
+            dataIndex: "phone",
+            key: "phone",
+        },
+        {
+            title: "Khoá",
+            dataIndex: "schoolYear",
+            key: "schoolYear",
+        }
     ];
 
     const [disableSubmitButton, setDisableSubmitButton] = useState(true);
@@ -48,40 +59,58 @@ function AddStudentModal({
 
     const [selectValue, setSelectValue] = useState([]);
 
+    let defaultStudentList = [];
+
     const handleSelectStudentChange = (value) => {
-        console.log('selected' + value);
         setSelectValue(value);
         setDisableSubmitButton(false);
     };
 
     const tableFooter = () => {
         return (
-            <Select
-                value={selectValue}
-                required
-                optionFilterProp="label"
-                showSearch
-                mode="multiple"
-                allowClear
-                style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
-                placeholder="Please select"
-                options={studentList.map((student) => ({
-                    label: student.userName,
-                    value: student.userId,
-                }))}
-                onChange={handleSelectStudentChange}
-            />
+            <Form
+                id='selectStudentForm'
+                form={form}
+                onFinish={handleSubmitButton}
+            >
+                <Form.Item
+                    label="Danh sách sinh viên :"
+                    name="studentList"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please input!',
+                        },
+                    ]}
+                    initialValue={defaultStudentList}
+                >
+                    <Select
+                        required
+                        optionFilterProp="label"
+                        showSearch
+                        mode="multiple"
+                        allowClear
+                        style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
+                        placeholder="Please select"
+                        options={studentList.map((student) => ({
+                            label: student.userName,
+                            value: student.userId,
+                        }))}
+                        onChange={handleSelectStudentChange}
+                    />
+                </Form.Item>
+            </Form>
         );
     };
 
-    const handleSubmitButton = async () => {
+    const handleSubmitButton = async (value) => {
         setLoading(true);
-        let submitValues = { studentIds: [...selectValue], courseSectionId: selectedCourse };
+        let submitValues = { studentIds: value.studentList, courseSectionId: selectedCourse };
         try {
             const response = await axiosPrivate.post("/student_enrolled/update", submitValues);
             if (response.status === 200) {
                 showSuccessMessage("Thêm sinh viên thành công!");
-                setCourseSectionStudentList(selectValue);
+                setCourseSectionStudentList(value.studentList);
             }
             onClose();
             setLoading(false);
@@ -94,23 +123,31 @@ function AddStudentModal({
 
     useEffect(() => {
         if (selectedCourse) {
-            setSelectValue(courseSectionStudentList[selectedCourse]?.map((student) => student.userId));
+            form.setFieldValue('studentList', courseSectionStudentList[selectedCourse]?.map((student) => student.userId));
             setDisableSubmitButton(true);
         }
-    }, [selectedCourse])
+    }, [selectedCourse, courseSectionStudentList])
+
+    const handleCloseModal = () => {
+        // form.resetFields();
+        form.setFieldValue('studentList', courseSectionStudentList[selectedCourse]?.map((student) => student.userId));
+        setShowModal(false);
+        setDisableSubmitButton(true);
+        // onClose();
+    }
 
     return (
         <>
             <Modal
                 show={show}
-                onHide={onClose}
+                onHide={handleCloseModal}
                 dialogClassName="custom-modal"
                 centered
                 size="xl"
                 // fullscreen="sm-down"
                 backdrop="static"
             >
-                <Modal.Header closeButton>
+                <Modal.Header closeButton={handleCloseModal}>
                     <Modal.Title>Course detail</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -130,10 +167,10 @@ function AddStudentModal({
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="primary" loading={loading} onClick={handleSubmitButton} disabled={disableSubmitButton}>
+                    <Button form="selectStudentForm" key='submit' htmlType="submit" variant="primary" loading={loading} disabled={disableSubmitButton}>
                         Submit
                     </Button>
-                    <Button variant="secondary" onClick={onClose}>
+                    <Button variant="secondary" onClick={handleCloseModal}>
                         Close
                     </Button>
                 </Modal.Footer>
