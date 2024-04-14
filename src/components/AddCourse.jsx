@@ -1,5 +1,5 @@
-import { Button, Form, Input, InputNumber, Select, Table, message, Upload, Skeleton } from "antd";
-import { UploadOutlined } from '@ant-design/icons';
+import { Button, Form, Input, InputNumber, Typography, Popconfirm, Select, Table, message, Upload, Skeleton, Modal } from "antd";
+import { UploadOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
@@ -7,6 +7,41 @@ import AddTeacherModal from "./AddTeacherModal";
 import MultiSelectWithPagination from "./MultiSelectWithPagination";
 
 const MAX_COUNT = 5;
+
+const EditableCell = ({
+  editing,
+  dataIndex,
+  title,
+  inputType,
+  record,
+  index,
+  children,
+  ...restProps
+}) => {
+  const inputNode = dataIndex === 'dob' ? <DatePicker format={"DD-MM-YYYY"} /> : <Input style={{ width: '115px', height: '25px' }} />;
+  return (
+    <td {...restProps}>
+      {editing ? (
+        <Form.Item
+          name={dataIndex}
+          style={{
+            margin: 0,
+          }}
+          rules={[
+            {
+              required: true,
+              message: `Please Input ${title}!`,
+            },
+          ]}
+        >
+          {inputNode}
+        </Form.Item>
+      ) : (
+        children
+      )}
+    </td>
+  );
+};
 
 const AddCourse = () => {
   const axiosPrivate = useAxiosPrivate();
@@ -21,6 +56,11 @@ const AddCourse = () => {
 
   const [sectionOptions, setSectionOptions] = useState([]);
 
+  const [editingCourseKey, setEditingCourseKey] = useState('');
+  const isEditingCourse = (record) => record.courseId === editingCourseKey;
+
+  const [formEditCourse] = Form.useForm();
+
   const courseTableColumns = [
     {
       title: "No.",
@@ -31,27 +71,145 @@ const AddCourse = () => {
       title: "Mã lớp học",
       dataIndex: "courseCode",
       key: "courseCode",
+      editable: true,
     },
     {
       title: "Tên lớp học",
       dataIndex: "courseName",
       key: "courseName",
+      editable: true,
     },
     {
       title: "Action",
-      render: (_, course) =>
-        courseTableData.length >= 1 ? (
-          <Button
-            type="primary"
-            shape="circle"
-            className="bg-[#1677ff]"
-          // onClick={() => handleShowAddTeacherModal(course)}
-          >
-            +
-          </Button>
-        ) : null,
+      render: (_, course) => {
+        const editable = isEditingCourse(course);
+        return editable && courseTableData.length >= 1 ? (
+          <span>
+            <Typography.Link
+              onClick={() => saveCourse(course.courseId)}
+              style={{
+                marginRight: 8,
+              }}
+            >
+              Save
+            </Typography.Link>
+            <Popconfirm title="Sure to cancel?" onConfirm={cancelCourse}>
+              <a>Cancel</a>
+            </Popconfirm>
+          </span>
+        ) : (
+          <span>
+            <Typography.Link disabled={editingCourseKey !== ''} onClick={() => editCourse(course)}>
+              Edit
+            </Typography.Link>
+            <Typography.Link onClick={() => showDeleteConfirm(course.courseId)} style={{ marginLeft: 8, color: "red" }}>
+              Delete
+            </Typography.Link>
+          </span>
+        );
+      },
     },
   ];
+
+  const showDeleteConfirm = (courseId) => {
+    Modal.confirm({
+      title: 'Bạn có chắc muốn xoá môn học này?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Việc này sẽ xoá tất cả dữ liệu trong mọi học kỳ của môn này',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        deleteTeacher(courseId);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
+  const deleteTeacher = async (courseId) => {
+    try {
+      let response;
+      response = await axiosPrivate.post(`/course/delete/${courseId}`);
+      showSuccessMessage(response.data.body)
+      getCourses();
+      getCourseSections(value);
+    } catch (error) {
+      showErrorMessage(error);
+    }
+  }
+
+  const mergeCourseColumns = courseTableColumns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        inputType: col.dataIndex === 'age' ? 'number' : 'text',
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditingCourse(record),
+      }),
+    };
+  });
+
+  const editCourse = (record) => {
+    console.log(record.courseId);
+    formEditCourse.setFieldsValue({
+      courseCode: '',
+      courseName: '',
+      ...record,
+    });
+    setEditingCourseKey(record.courseId);
+  };
+
+  const cancelCourse = () => {
+    setEditingCourseKey('');
+  };
+
+  const saveCourse = async (key) => {
+    try {
+      const row = await formEditCourse.validateFields();
+      const newData = [...courseTableData];
+
+      const index = newData.findIndex((item) => {
+        return key === item.courseId
+      });
+
+      if (index > -1) {
+        const item = newData[index];
+        newData.splice(index, 1, {
+          ...item,
+          ...row,
+        });
+        console.log(newData[index]);
+        setCourseTableData(newData);
+        updateCourseInfo(newData[index]);
+        setEditingCourseKey('');
+      } else {
+        newData.push(row);
+        setCourseTableData(newData);
+        updateCourseInfo(newData[index]);
+        setEditingCourseKey('');
+      }
+    } catch (errInfo) {
+      console.log('Validate Failed:', errInfo);
+    }
+  };
+
+  const updateCourseInfo = async (item) => {
+    try {
+      let response;
+      response = await axiosPrivate.post(`/course/update/${item.courseId}`, item);
+      showSuccessMessage(response.data.body)
+      getCourseSections(value);
+    } catch (error) {
+      showErrorMessage(error);
+    }
+  }
 
   const courseSectionTableColumns = [
     {
@@ -730,18 +888,26 @@ const AddCourse = () => {
               </Upload>
             </div>
 
-            <Table
-              rowKey={courseTableData.no}
-              columns={courseTableColumns}
-              dataSource={courseTableData}
-              // pagination={coursetableParams.pagination}
-              pagination={{ pageSize: 5 }}
-              loading={courseTableLoading}
-              // onChange={handleCourseTableChange}
-              scroll={{
-                y: 250,
-              }}
-            />
+            <Form form={formEditCourse} component={false}>
+              <Table
+                components={{
+                  body: {
+                    cell: EditableCell,
+                  },
+                }}
+                rowKey="courseId"
+                columns={mergeCourseColumns}
+                dataSource={courseTableData}
+                // pagination={coursetableParams.pagination}
+                pagination={{ pageSize: 5 }}
+                loading={courseTableLoading}
+                rowClassName="editable-row"
+                // onChange={handleCourseTableChange}
+                scroll={{
+                  y: 250,
+                }}
+              />
+            </Form>
           </div>
         </div>
 
@@ -839,21 +1005,21 @@ const AddCourse = () => {
               ]}
             >
               <Select
-              required
-              showSearch
-              mode="multiple"
-              allowClear
-              style={{ width: '100%' }}
-              placeholder="Please select"
-              options={teacherList.map((teacher) => ({
-                value: teacher.userId,
-                label: teacher.userName,
-              }))}
-              filterOption={(input, option) =>
-                option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              maxCount={4}
-            />
+                required
+                showSearch
+                mode="multiple"
+                allowClear
+                style={{ width: '100%' }}
+                placeholder="Please select"
+                options={teacherList.map((teacher) => ({
+                  value: teacher.userId,
+                  label: teacher.userName,
+                }))}
+                filterOption={(input, option) =>
+                  option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                maxCount={4}
+              />
               {/* <MultiSelectWithPagination
                 apiEndpoint="/course_section/1"
                 optionLabelKey="courseCode"

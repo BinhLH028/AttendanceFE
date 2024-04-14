@@ -32,9 +32,24 @@ function AddTeacherModal({
       key: "userName",
     },
     {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Số điện thoại",
+      dataIndex: "phone",
+      key: "phone",
+    },
+    {
       title: "Ngày sinh",
       dataIndex: "dob",
       key: "dob",
+    },
+    {
+      title: "Khoa",
+      dataIndex: "department",
+      key: "department",
     },
   ];
 
