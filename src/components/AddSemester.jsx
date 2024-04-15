@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Button, Form, Input, InputNumber, Select, Table, message, Upload, Skeleton } from "antd";
+import { Button, Modal, Input, InputNumber, Select, Table, message, Upload, Skeleton } from "antd";
 import './../style/AddSemester.css';
 import AddStudentModal from './AddStudentModal';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined,ExclamationCircleOutlined } from '@ant-design/icons';
 import { showErrorMessage, showSuccessMessage } from '../util/toastdisplay';
+import "./../style/AddCourse.css";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 
 const AddSemester = () => {
@@ -40,6 +41,7 @@ const AddSemester = () => {
       title: "Action",
       render: (_, course) =>
         courseSectionTableData.length >= 1 ? (
+          <>
           <Button
             type="primary"
             shape="circle"
@@ -48,6 +50,19 @@ const AddSemester = () => {
           >
             +
           </Button>
+          <Button
+              id="btn-del-CS"
+              type="primary"
+              shape="circle"
+              className="bg-[#D30000]"
+              style={{
+                marginLeft: "5px",
+              }}
+              onClick={() => handleDeleteCourseSection(course)}
+            >
+              -
+            </Button>
+          </>
         ) : null,
     },
   ];
@@ -98,6 +113,35 @@ const AddSemester = () => {
     setShowModal(true);
     await fetchStudentList(course.id);
   };
+
+  const handleDeleteCourseSection = async (course) => {
+
+    Modal.confirm({
+      title: 'Bạn có chắc muốn xoá lớp môn học này?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Việc này sẽ xoá tất cả dữ liệu trong học kỳ của môn này',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        deleteCourseSection(course.id);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
+  const deleteCourseSection = async (id) => {
+    try {
+      let response;
+      response = await axiosPrivate.post(`/course_section/delete?csId=${id}`);
+      showSuccessMessage(response.data.body)
+      getCourseSections(value);
+    } catch (error) {
+      showErrorMessage(error);
+    }
+  }
 
   const fetchStudentList = async (courseId) => {
     try {

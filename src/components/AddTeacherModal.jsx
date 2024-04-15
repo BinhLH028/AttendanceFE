@@ -5,6 +5,7 @@ import "../style/Modal.css";
 import { useEffect, useRef, useState } from "react";
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
 import { axiosPrivate } from "../api/http-common";
+import DebounceSelect from "./DebounceSelect"
 
 function AddTeacherModal({
   teacherList,
@@ -59,12 +60,23 @@ function AddTeacherModal({
 
   const [selectValue, setSelectValue] = useState([]);
 
+
   let defaultTeacherList = [];
 
   const handleSelectTeacherChange = (value) => {
     setSelectValue(value);
     setDisableSubmitButton(false);
   };
+
+  async function fetchTeacherByFilter(code) {
+
+    const response = await axiosPrivate.post(`/teacher/name?n=${code}`);
+    let teacherList = response.data.body.map((teacher, index) => {
+      return { index: index + 1, ...teacher,  label: teacher.userName, value: teacher.userId };
+    });
+    console.log(teacherList);
+    return teacherList;
+  }
 
   const tableFooter = () => {
     return (
@@ -98,6 +110,16 @@ function AddTeacherModal({
             }))}
             onChange={handleSelectTeacherChange}
           />
+          {/* <DebounceSelect
+            required
+            mode="multiple"
+            showSearch
+            optionFilterProp="label"
+            style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
+            placeholder="Select users"
+            fetchOptions={fetchTeacherByFilter}
+            onChange={handleSelectTeacherChange}
+          /> */}
         </Form.Item>
       </Form>
     );

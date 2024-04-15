@@ -679,7 +679,7 @@ const UserManagement = () => {
                 <div className="h-screen grid grid-cols-10 grid-rows-4 gap-4 rounded-xl mr-5">
                     <div className="col-span-10 row-span-full col-start-0 bg-gray-50 rounded-xl flex flex-col justify-start items-center">
                         <div className="flex flex-row justify-between w-full h-full ">
-                            <div className="overflow-x-auto whitespace-no-wrap w-[calc(50%-2.5px)] bg-red-300 ">
+                            <div className="overflow-x-auto whitespace-no-wrap w-[calc(50%-2.5px)] " style={{ borderRight: '2px solid gray' }}>
                                 <div className=" bg-gray-100 p-2 rounded-xl ">
                                     {inputTeachers}
                                     <Upload {...propsTeachers} style={{ display: "inline-block" }}>
@@ -693,6 +693,7 @@ const UserManagement = () => {
                                                 cell: EditableCell,
                                             },
                                         }}
+                                        bordered
                                         columns={mergeTeacherColumns}
                                         dataSource={teacherTableData}
                                         pagination={teacherTableParams.pagination}
@@ -704,8 +705,8 @@ const UserManagement = () => {
                                     />
                                 </Form>
                             </div>
-                            <div className="w-[calc(50%-2.5px)] bg-blue-300 ">
-                                <div className=" bg-gray-100 p-2 rounded-xl ">
+                            <div className="w-[calc(50%-2.5px)]" >
+                                <div className=" bg-gray-100 p-2 rounded-xl " >
                                     {inputStudents}
                                     <Upload {...propsStudents} style={{ display: "inline-block" }}>
                                         <Button icon={<UploadOutlined />}>Upload sinh viên</Button>
@@ -719,6 +720,7 @@ const UserManagement = () => {
                                                 cell: EditableCell,
                                             },
                                         }}
+                                        bordered
                                         columns={mergeStudentColumns}
                                         dataSource={studentTableData}
                                         pagination={studentTableParams.pagination}

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
 import AddTeacherModal from "./AddTeacherModal";
+import "./../style/AddCourse.css";
+import DebounceSelect from "./DebounceSelect"
 import MultiSelectWithPagination from "./MultiSelectWithPagination";
 
 const MAX_COUNT = 5;
@@ -241,14 +243,29 @@ const AddCourse = () => {
       title: "Action",
       render: (_, course) =>
         courseSectionTableData.length >= 1 ? (
-          <Button
-            type="primary"
-            shape="circle"
-            className="bg-[#1677ff]"
-            onClick={() => handleShowAddTeacherModal(course)}
-          >
-            +
-          </Button>
+          <>
+            <Button
+              type="primary"
+              shape="circle"
+              className="bg-[#1677ff]"
+              onClick={() => handleShowAddTeacherModal(course)}
+            >
+              +
+            </Button>
+            <Button
+              id="btn-del-CS"
+              type="primary"
+              shape="circle"
+              className="bg-[#D30000]"
+              style={{
+                marginLeft: "5px",
+              }}
+              onClick={() => handleDeleteCourseSection(course)}
+            >
+              -
+            </Button>
+          </>
+
         ) : null,
     },
   ];
@@ -459,7 +476,7 @@ const AddCourse = () => {
         }`
       );
       if (response)
-        response.data.body.content.map((res, index) => {
+        response.data.body.content?.map((res, index) => {
           let courseSection = {};
           const flatten = (source, prefix = "") => {
             for (const key in source) {
@@ -572,7 +589,7 @@ const AddCourse = () => {
 
   function isFieldsTouched() {
     return (
-      form1.isFieldTouched("semester") && form1.isFieldTouched("startYear") && form1.isFieldTouched("endYear")
+      form1.isFieldTouched("semester") && form1.isFieldTouched("year") 
     );
   }
 
@@ -580,6 +597,35 @@ const AddCourse = () => {
     return (
       form3.isFieldTouched("courseId") && form3.isFieldTouched("teachersId")
     );
+  }
+
+  const handleDeleteCourseSection = async (course) => {
+
+    Modal.confirm({
+      title: 'Bạn có chắc muốn xoá lớp môn học này?',
+      icon: <ExclamationCircleOutlined />,
+      content: 'Việc này sẽ xoá tất cả dữ liệu trong học kỳ của môn này',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        deleteCourseSection(course.id);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
+  const deleteCourseSection = async (id) => {
+    try {
+      let response;
+      response = await axiosPrivate.post(`/course_section/delete?csId=${id}`);
+      showSuccessMessage(response.data.body)
+      getCourseSections(value);
+    } catch (error) {
+      showErrorMessage(error);
+    }
   }
 
   const handleShowAddTeacherModal = async (course) => {
@@ -669,9 +715,21 @@ const AddCourse = () => {
     getCourseSections(value);
   }, [JSON.stringify(courseSectiontableParams), value]);
 
+  const [debounceVal, setDebounceVal] = useState([]);
+
+  async function fetchCourseByFilter(code) {
+
+    const response = await axiosPrivate.post(`/course/code?c=${code}`);
+    let courseList = response.data.body.map((course, index) => {
+      return { index: index + 1, ...course, value: course.courseId, label: course.courseCode };
+    });
+    return courseList;
+  }
+
   return (
     <>
-      <div className="h-screen grid grid-cols-10 grid-rows-7 gap-4 rounded-xl mr-5">
+      <div className="h-screen grid grid-cols-10 grid-rows-7 gap-4 rounded-xl mr-5"
+        style={{ minWidth: "1300px", overflow: "hidden" }}>
         <div className="col-span-3 row-span-2 bg-gray-50 rounded-xl p-4 min-w-64 overflow-auto">
           <Form
             labelCol={{
@@ -681,9 +739,7 @@ const AddCourse = () => {
               span: 16,
             }}
             style={{
-              width: "100%",
-              // maxWidth: 600,
-              // paddingRight: "2rem",
+              minWidth: 350,
             }}
             initialValues={{
               remember: true,
@@ -711,68 +767,32 @@ const AddCourse = () => {
             </Form.Item>
 
             <Form.Item
-              name="year"
               label="Năm học"
-              className="h-8"
+              name="year"
               rules={[
                 {
                   required: true,
-                  message: "Nam hoc không được trống!",
+                  message: "",
                 },
               ]}
             >
-              <Form.Item
-                name="startYear"
-                style={{
-                  display: 'inline-block',
-                  width: 'calc(50% - 20px)',
-                }}
-                rules={[
-                  {
-                    required: true,
-                    message: ''
-                  },
-                ]}
-              >
-                <InputNumber
-                  type="number"
-                  min={0}
-                  max={new Date().getFullYear() - 1} // Adjusted max value to allow only up to the year before the current year
-                  value={fromYear}
-                  onChange={handleFromYearChange}
-                />
-              </Form.Item>
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '24px',
-                  lineHeight: '32px',
-                  marginLeft: '-40px',
-                  textAlign: 'center',
-                }}
-              >-
-              </span>
-              <Form.Item
-                name="endYear"
-                style={{
-                  display: 'inline-block',
-                  width: 'calc(50% - 20px)',
-                }}
-                rules={[
-                  {
-                    required: true,
-                    message: ''
-                  },
-                ]}
-              >
-                <InputNumber
-                  type="number"
-                  min={1}
-                  max={new Date().getFullYear()} // Minimum value set to 1 greater than the "from" year
-                  value={toYear}
-                  onChange={handleToYearChange}
-                />
-              </Form.Item>
+              <InputNumber
+              style={{marginRight:"5px"}}
+                type="number"
+                min={0}
+                max={new Date().getFullYear() - 1} // Adjusted max value to allow only up to the year before the current year
+                value={fromYear}
+                onChange={handleFromYearChange}
+                
+              /> -
+              <InputNumber
+              style={{marginLeft:"5px"}}
+                type="number"
+                min={1}
+                max={new Date().getFullYear()} // Minimum value set to 1 greater than the "from" year
+                value={toYear}
+                onChange={handleToYearChange}
+              />
             </Form.Item>
 
             <Form.Item
@@ -787,7 +807,6 @@ const AddCourse = () => {
                   type="primary"
                   htmlType="submit"
                   disabled={
-                    !isFieldsTouched() ||
                     form1.getFieldsError().filter(({ errors }) => errors.length)
                       .length > 0
                   }
@@ -911,7 +930,9 @@ const AddCourse = () => {
           </div>
         </div>
 
-        <div className="col-span-7 row-span-full col-start-4 bg-gray-50 rounded-xl overflow-auto">
+        <div className="col-span-7 row-span-full col-start-4 bg-gray-50 rounded-xl "
+          style={{ minWidth: "1000", overflow: "hidden" }}
+        >
           {sectionOptions.length ?
             <Select
               allowClear
@@ -929,21 +950,20 @@ const AddCourse = () => {
           <Upload {...propsCourseSection} style={{ display: "inline-block" }}>
             <Button icon={<UploadOutlined />}>Upload danh sách LMH</Button>
           </Upload>
-          <Form
+          <Form className="grid grid-cols-12 grid-rows-1 gap-3"
             labelCol={{
-              span: 8,
+              span: 10,
             }}
             wrapperCol={{
               span: 20,
             }}
-            style={{
-              width: "auto",
-              maxWidth: "1000px",
-              paddingRight: "2rem",
-              zIndex: -10,
-              display: 'flex',
-              flexDirection: 'row',
-            }}
+            // style={{
+            //   width: "auto",
+            //   paddingRight: "2rem",
+            //   zIndex: -10,
+            //   display: 'flex',
+            //   flexDirection: 'row',
+            // }}
             initialValues={{
               remember: true,
               team: 'CL' // Set default value for the 'team' field here
@@ -953,9 +973,10 @@ const AddCourse = () => {
             form={form3}
           >
             <Form.Item
+              className="col-span-3"
               label="Mã lớp học"
               name="courseId"
-              style={{ width: 'auto', margin: '0 1rem' }}
+              // style={{ width: 'auto', margin: '0 1rem' }}
               rules={[
                 {
                   required: true,
@@ -964,21 +985,43 @@ const AddCourse = () => {
               ]}
             >
               {sectionOptions.length ?
-                <Select
-                  allowClear
-                  style={{
-                    width: "12rem",
+                // <Select
+                //   allowClear
+                //   showSearch
+                //   style={{
+                //     width: "8rem",
+                //   }}
+                //   placeholder="Chọn môn học"
+                //   options={courseTableData}
+                //   filterOption={(input, option) =>
+                //     option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                //   }
+                //   maxTagCount={5}
+                // />
+                <DebounceSelect
+                  mode="single"
+                  showSearch
+                  value={debounceVal}
+                  placeholder="Chọn môn học"
+                  fetchOptions={fetchCourseByFilter}
+                  onChange={(newValue) => {
+                    setDebounceVal(newValue);
                   }}
-                  placeholder="Chọn học kỳ"
-                  options={courseTableData}
-                  maxTagCount={5}
-                /> :
+                  style={{
+                    width: '100%',
+                  }}
+                />
+                :
                 <Skeleton.Input active={true} size="large" />
               }
             </Form.Item>
             <Form.Item
+              className="col-span-2 col-start-4"
               label="Nhóm"
               name="team"
+              // style={{
+              //   width: "8rem",
+              // }}
               rules={[
                 {
                   required: false,
@@ -994,9 +1037,10 @@ const AddCourse = () => {
               </Select>
             </Form.Item>
             <Form.Item
+              className="col-span-3 col-start-6"
               label="Giảng viên"
               name="teachersId"
-              style={{ width: '25rem', }}
+              // style={{ width: '25rem', marginRight: "0rem" }}
               rules={[
                 {
                   required: true,
@@ -1004,22 +1048,28 @@ const AddCourse = () => {
                 }
               ]}
             >
-              <Select
-                required
-                showSearch
-                mode="multiple"
-                allowClear
-                style={{ width: '100%' }}
-                placeholder="Please select"
-                options={teacherList.map((teacher) => ({
-                  value: teacher.userId,
-                  label: teacher.userName,
-                }))}
-                filterOption={(input, option) =>
-                  option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                maxCount={4}
-              />
+              {Array.isArray(teacherList) && teacherList.length > 0 ? (
+                <Select
+                  required
+                  showSearch
+                  mode="multiple"
+                  allowClear
+                  style={{ width: '100%' }}
+                  placeholder="Please select"
+                  options={
+                    teacherList.map((teacher) => ({
+                      value: teacher.userId,
+                      label: teacher.userName,
+                    }))
+                  }
+                  filterOption={(input, option) =>
+                    option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  maxCount={4}
+                />
+              ) : (
+                <div>No teacher data available</div>
+              )}
               {/* <MultiSelectWithPagination
                 apiEndpoint="/course_section/1"
                 optionLabelKey="courseCode"
@@ -1030,7 +1080,14 @@ const AddCourse = () => {
                 style={{ width: '80%', marginLeft: "25px" }}
               /> */}
             </Form.Item>
-
+            <Form.Item
+              className="col-span-2 col-start-9"
+              label="Phòng"
+              name="room"
+            // style={{ width: '20%', marginLeft: "20px" }}
+            >
+              <Input />
+            </Form.Item>
 
             <Form.Item
               wrapperCol={{
@@ -1041,6 +1098,7 @@ const AddCourse = () => {
             >
               {() => (
                 <Button
+                  // style={{ marginRight: "20px" }}
                   type="primary"
                   htmlType="submit"
                   disabled={
