@@ -138,7 +138,9 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     }
 
     const connectSocket = () => {
-        var socket = new SockJS('http://localhost:8080/our-websocket');
+        // https://attendance-8iks.onrender.com/
+        // http://localhost:8080/
+        var socket = new SockJS('https://attendance-8iks.onrender.com/our-websocket');
         stompClient = over(socket);
         var headers = {
             Authorization: 'Bearer ' + auth.accessToken,

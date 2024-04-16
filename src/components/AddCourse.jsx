@@ -122,7 +122,7 @@ const AddCourse = () => {
       okType: 'danger',
       cancelText: 'No',
       onOk() {
-        deleteTeacher(courseId);
+        deleteCourse(courseId);
       },
       onCancel() {
         console.log('Cancel');
@@ -130,11 +130,11 @@ const AddCourse = () => {
     });
   };
 
-  const deleteTeacher = async (courseId) => {
+  const deleteCourse = async (courseId) => {
     try {
       let response;
       response = await axiosPrivate.post(`/course/delete/${courseId}`);
-      showSuccessMessage(response.data.body)
+      showSuccessMessage(response.data)
       getCourses();
       getCourseSections(value);
     } catch (error) {
@@ -467,10 +467,14 @@ const AddCourse = () => {
     }
   };
 
-  const getCourseSections = async (value = 1) => {
+  const getCourseSections = async (value) => {
     setCourseSectionTableData([]);
     setCourseSectionTableLoading(true);
     try {
+      
+      if (value == undefined){
+        setValue(sectionOptions[0].value)
+      }
       const response = await axiosPrivate.get(
         `/course_section/${value}?page=${courseSectiontableParams.pagination.current - 1
         }`
@@ -572,9 +576,14 @@ const AddCourse = () => {
 
   const onCourseSectionFinish = async (values) => {
 
+    const data = { ...values, sectionId: value, courseId: values.courseId.value };
+
+    if (value == undefined) {
+      setValue(sectionOptions[0].value)
+      data = { ...values, sectionId: sectionOptions[0].value, courseId: values.courseId.value };
+    }
+
     try {
-      console.log(values);
-      const data = { ...values, sectionId: value }
       const response = await axiosPrivate.post("/course_section/create", data);
       if (response.status === 200) {
         showSuccessMessage("Tạo khóa học thành công!");
@@ -621,7 +630,7 @@ const AddCourse = () => {
     try {
       let response;
       response = await axiosPrivate.post(`/course_section/delete?csId=${id}`);
-      showSuccessMessage(response.data.body)
+      showSuccessMessage(response.data)
       getCourseSections(value);
     } catch (error) {
       showErrorMessage(error);
