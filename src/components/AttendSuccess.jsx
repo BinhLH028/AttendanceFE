@@ -35,7 +35,7 @@ const AttendSuccess = () => {
         });
         var mobilecheck = client.isMobile();
         // if(mobilecheck == true) {
-        sendAttendRequest(params.name, msg);
+        sendAttendRequest(params.email, msg);
         // } else {
         //     //TODO: please use mobile device
         // }
@@ -50,8 +50,8 @@ const AttendSuccess = () => {
 
     }, []);
 
-    const sendAttendRequest = (name, msg) => {
-        axiosPrivate.post("/send-private-message/" + name, msg).catch(error => { console.log(error) });
+    const sendAttendRequest = (email, msg) => {
+        axiosPrivate.post("/send-private-message/" + email, msg).catch(error => { console.log(error) });
     }
 
     return (
