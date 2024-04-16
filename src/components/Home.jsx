@@ -47,7 +47,7 @@ const Home = ({ children }) => {
   }
 
   useEffect(() => {
-    if(["USER"].includes(auth.userData.role))
+    if(["USER","TEACHER"].includes(auth.userData.role))
     getListSemester();
   }, []);
 
