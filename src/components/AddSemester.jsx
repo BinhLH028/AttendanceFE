@@ -38,6 +38,11 @@ const AddSemester = () => {
       key: "teacherList",
     },
     {
+      title: "Giảng đường",
+      dataIndex: "room",
+      key: "room",
+    },
+    {
       title: "Action",
       render: (_, course) =>
         courseSectionTableData.length >= 1 ? (
@@ -88,7 +93,7 @@ const AddSemester = () => {
 
   const [studentOptions, setStudentOptions] = useState([]);
 
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState();
 
   const [sectionOptions, setSectionOptions] = useState([]);
 
@@ -219,10 +224,14 @@ const AddSemester = () => {
     }
   };
 
-  const getCourseSections = async (value = 1) => {
+  const getCourseSections = async (value) => {
     setCourseSectionTableData([]);
     setCourseSectionTableLoading(true);
     try {
+      if (value == undefined){
+        setCourseSectionTableLoading(false);
+        return;
+      }
       const response = await axiosPrivate.get(
         `/course_section/${value}?page=${courseSectiontableParams.pagination.current - 1
         }`
@@ -360,7 +369,7 @@ const AddSemester = () => {
                 placeholder="Chọn học kỳ"
                 onChange={handleChange}
                 options={sectionOptions}
-                defaultValue={sectionOptions[0]}
+                // defaultValue={sectionOptions[0]}
               />
 
               <Upload {...propsCourse} style={{ display: "inline-block" }}>
@@ -380,6 +389,7 @@ const AddSemester = () => {
             />
           </div>
           <AddStudentModal
+            currentCS={value}
             studentList={studentList}
             show={showModal}
             onClose={handleCloseModalDetail}

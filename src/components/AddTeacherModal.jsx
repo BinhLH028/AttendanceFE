@@ -8,6 +8,7 @@ import { axiosPrivate } from "../api/http-common";
 import DebounceSelect from "./DebounceSelect"
 
 function AddTeacherModal({
+  currentCS,
   teacherList,
   show,
   onClose,
@@ -141,7 +142,7 @@ function AddTeacherModal({
       }
       onClose();
       setLoading(false);
-      getCourseSections();
+      getCourseSections(currentCS);
     } catch (error) {
       console.log(error);
       showErrorMessage(error);

@@ -240,6 +240,11 @@ const AddCourse = () => {
       key: "teacherList",
     },
     {
+      title: "Giảng đường",
+      dataIndex: "room",
+      key: "room",
+    },
+    {
       title: "Action",
       render: (_, course) =>
         courseSectionTableData.length >= 1 ? (
@@ -473,7 +478,8 @@ const AddCourse = () => {
     try {
       
       if (value == undefined){
-        setValue(sectionOptions[0].value)
+        setCourseSectionTableLoading(false);
+        return;
       }
       const response = await axiosPrivate.get(
         `/course_section/${value}?page=${courseSectiontableParams.pagination.current - 1
@@ -589,18 +595,12 @@ const AddCourse = () => {
         showSuccessMessage("Tạo khóa học thành công!");
       }
       form3.resetFields();
-      getCourseSections();
+      getCourseSections(value);
       setLoadings([]);
     } catch (error) {
       showErrorMessage(error.request.response);
     }
   };
-
-  function isFieldsTouched() {
-    return (
-      form1.isFieldTouched("semester") && form1.isFieldTouched("year") 
-    );
-  }
 
   function isFieldsTouchedF3() {
     return (
@@ -778,12 +778,6 @@ const AddCourse = () => {
             <Form.Item
               label="Năm học"
               name="year"
-              rules={[
-                {
-                  required: true,
-                  message: "",
-                },
-              ]}
             >
               <InputNumber
               style={{marginRight:"5px"}}
@@ -952,7 +946,7 @@ const AddCourse = () => {
               placeholder="Chọn học kỳ"
               onChange={handleChange}
               options={sectionOptions}
-              defaultValue={sectionOptions[0]}
+              // defaultValue={sectionOptions[0]}
             /> :
             <Skeleton.Input active={true} size="large" />
           }
@@ -1138,6 +1132,7 @@ const AddCourse = () => {
       </div>
 
       <AddTeacherModal
+        currentCS={value}
         teacherList={teacherList}
         show={showModal}
         onClose={handleCloseModalDetail}
