@@ -738,7 +738,7 @@ const AddCourse = () => {
   return (
     <>
       <div className="h-screen grid grid-cols-10 grid-rows-7 gap-4 rounded-xl mr-5"
-        style={{ minWidth: "1300px", overflow: "hidden" }}>
+        style={{ minWidth: "81.25rem", overflow: "hidden" }}>
         <div className="col-span-3 row-span-2 bg-gray-50 rounded-xl p-4 min-w-64 overflow-auto">
           <Form
             labelCol={{

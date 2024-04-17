@@ -363,7 +363,7 @@ const AddSemester = () => {
               <Select className="w-full"
                 allowClear
                 style={{
-                  width: "auto",
+                  width: "10rem",
                   margin: "10px",
                 }}
                 placeholder="Chọn học kỳ"

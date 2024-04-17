@@ -677,10 +677,10 @@ const UserManagement = () => {
         ["ADMIN"].includes(auth.userData.role) ?
             <>
                 <div className="h-screen grid grid-cols-10 grid-rows-4 gap-4 rounded-xl mr-5">
-                    <div className="col-span-10 row-span-full col-start-0 bg-gray-50 rounded-xl flex flex-col justify-start items-center">
+                    <div className="col-span-10 row-span-full col-start-0  rounded-xl flex flex-col justify-start items-center">
                         <div className="flex flex-row justify-between w-full h-full ">
-                            <div className="overflow-x-auto whitespace-no-wrap w-[calc(50%-2.5px)] " style={{ borderRight: '2px solid gray' }}>
-                                <div className=" bg-gray-100 p-2 rounded-xl ">
+                            <div className="overflow-x-auto whitespace-no-wrap w-[calc(50%-2.5px)] " style={{ borderRight: '2px solid gray',minWidth:"37.5rem" }}>
+                                <div className=" bg-gray-100 p-2 rounded-xl " style={{}}>
                                     {inputTeachers}
                                     <Upload {...propsTeachers} style={{ display: "inline-block" }}>
                                         <Button icon={<UploadOutlined />}>Upload danh sách giảng viên</Button>
@@ -705,7 +705,7 @@ const UserManagement = () => {
                                     />
                                 </Form>
                             </div>
-                            <div className="w-[calc(50%-2.5px)]" >
+                            <div className="w-[calc(50%-2.5px)]" style={{minWidth:"37.5rem"}}>
                                 <div className=" bg-gray-100 p-2 rounded-xl " >
                                     {inputStudents}
                                     <Upload {...propsStudents} style={{ display: "inline-block" }}>
