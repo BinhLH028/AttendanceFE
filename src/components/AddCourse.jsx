@@ -576,7 +576,7 @@ const AddCourse = () => {
 
   const onCourseSectionFinish = async (values) => {
 
-    const data = { ...values, sectionId: value, courseId: values.courseId.value };
+    let data = { ...values, sectionId: value, courseId: values.courseId.value };
 
     if (value == undefined) {
       setValue(sectionOptions[0].value)
