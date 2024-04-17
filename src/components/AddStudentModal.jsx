@@ -7,6 +7,7 @@ import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
 import { axiosPrivate } from "../api/http-common";
 
 function AddStudentModal({
+    currentCS,
     studentList,
     show,
     onClose,
@@ -114,7 +115,7 @@ function AddStudentModal({
             }
             onClose();
             setLoading(false);
-            getCourseSections();
+            getCourseSections(currentCS);
         } catch (error) {
             console.log(error);
             showErrorMessage(error);

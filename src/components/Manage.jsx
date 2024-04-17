@@ -261,10 +261,8 @@ const Manage = () => {
             label: "Học kì " + res.semester + " năm " + res.year,
             value: res.sectionId,
           });
-          console.log(res);
         });
         setSectionOptions(listData);
-        console.log(listData);
       }
     } catch (error) {
       console.log(error);
@@ -366,9 +364,3 @@ const Manage = () => {
 };
 
 export default Manage;
-
-{/* <input
-        type="text"
-        value={filter.userCode}
-        onChange={(e) => updateFilter('userCode', e.target.value)}
-      /> */}
