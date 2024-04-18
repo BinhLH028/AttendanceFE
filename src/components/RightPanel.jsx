@@ -4,14 +4,14 @@ import { over } from 'stompjs';
 import SockJS from 'sockjs-client';
 import useAuth from "./hooks/useAuth";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
-import Form from 'react-bootstrap/Form';
-import Modal from './Modal';
+import { Select, } from "antd";
 import { DataGrid } from '@mui/x-data-grid';
 
 import "./../style/RightPanel.css";
 import { toast } from "react-toastify";
 import { Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { showErrorMessage, showSuccessMessage } from '../util/toastdisplay';
 
 var stompClient = null;
 const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowTable }) => {
@@ -30,6 +30,8 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     const [rows, setRows] = new useState([]);
     const [columns, setColumns] = new useState([]);
     const [editedAttend, setEdittedAttend] = new useState([]);
+
+    const [isSessionCreated, setIsSessionCreated] = useState(false);
 
     let i = 1;
 
@@ -67,7 +69,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             { field: 'col1', headerName: 'Mã SV', width: 150 },
             { field: 'col2', headerName: 'Họ và tên', width: 150 },
             { field: 'col3', headerName: 'Ngày sinh', width: 150 },
-            { field: 'col4', headerName: 'Số buổi vắng', width: 150},
+            { field: 'col4', headerName: 'Số buổi vắng', width: 150 },
             { field: 'col5', headerName: 'Buổi 1', width: 150, type: 'boolean', editable: true },
             { field: 'col6', headerName: 'Buổi 2', width: 150, type: 'boolean', editable: true },
             { field: 'col7', headerName: 'Buổi 3', width: 150, type: 'boolean', editable: true },
@@ -101,39 +103,24 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     }, [data, rows])
 
     const createAttendanceSession = async () => {
-        try {
-            const response = await axiosPrivate.post("/attendance?cs=" + curCS + "&lec=" + lecture);
+        if (!isSessionCreated) {
+            setIsSessionCreated(true);
+            setEdittedAttend([])
+            try {
+                const response = await axiosPrivate.post("/attendance?cs=" + curCS + "&lec=" + lecture);
 
-            setModalData(auth.userData.email + "%2F" + curCS);
-            setOpenModal(true);
-            connectSocket();
-            setAttenData(new Map());
+                setModalData(auth.userData.email + "%2F" + curCS);
+                setOpenModal(true);
+                connectSocket();
+                setAttenData(new Map());
 
-            toast.success(`Tạo phiên điểm danh buổi thứ: ${lecture}`, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Bounce,
-            });
-            // reset edit array when create new session
-            arrayEditAttend.length = 0;
-        } catch (error) {
-            toast.success(`Error : ${error}`, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Bounce,
-            });
+                showSuccessMessage(`Tạo phiên điểm danh buổi thứ: ${lecture}`)
+
+            } catch (error) {
+                showErrorMessage(error)
+            }
+        } else {
+            showErrorMessage("Đang có 1 phiên khác diễn ra hoặc chưa lưu phiên cũ")
         }
     }
 
@@ -168,54 +155,60 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
         event.stopPropagation();
     }
 
-    const handleSelectChange = (event) => {
-        setLecture(event.target.value);
-
-        console.log(lecture)
+    const handleSelectChange = (value) => {
+        setLecture(value);
     }
 
     const saveAttendanceSession = async () => {
-        var attendSession = {
-            lectureNum: parseInt(lecture),
-            listStudentId: Array.from(attenData.values()),
-            listEditUserAttends: editedAttend
-        }
-        let response;
-        try {
-            response = await axiosPrivate.post("/attendance/save?cs=" + curCS, attendSession);
+        if (isSessionCreated) {
+            setIsSessionCreated(false);
+            var attendSession = {
+                lectureNum: parseInt(lecture),
+                listStudentId: Array.from(attenData.values()),
+                listEditUserAttends: editedAttend
+            }
+            let response;
+            try {
+                response = await axiosPrivate.post("/attendance/save?cs=" + curCS, attendSession);
 
-            toast.success(`Lưu phiên điểm danh buổi thứ: ${lecture}`, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Bounce,
-            });
-        } catch (error) {
-            toast.error(`Lỗi: ${error.response.data}`, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Bounce,
-            });
-        }
+                toast.success(`Lưu phiên điểm danh buổi thứ: ${lecture}`, {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                    transition: Bounce,
+                });
+            } catch (error) {
+                toast.error(`Lỗi: ${error.response.data}`, {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                    transition: Bounce,
+                });
+            }
+        } else
+            showErrorMessage("Giảng viên chưa tạo phiên điểm danh !")
     }
     // TODO: fix
     const onCellEditCommit = (params) => {
-        if (!editedAttend.includes(params.row.col20)) {
-            const newEditedAttend = [...editedAttend, params.row.col20];
-            setEdittedAttend(newEditedAttend)
+        if (isSessionCreated) {
+            if (!editedAttend.includes(params.row.col20)) {
+                const newEditedAttend = [...editedAttend, params.row.col20];
+                setEdittedAttend(newEditedAttend)
+            }
+            console.log("binh+" + editedAttend);
+        } else {
+            showErrorMessage("Mọi thay đổi trước khi mở phiên đều không được lưu lại!")
         }
-        console.log("binh+" + editedAttend);
     };
 
     if (isFectch) return (
@@ -266,15 +259,18 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                                     marginLeft: "4.5rem"
                                 }}>
                                 <div className='button'
-                                    style={{}} onClick={() => createAttendanceSession()}>
+                                    style={{
+                                        backgroundColor: !isSessionCreated ? "rgb(92, 193, 226)" : "gray",
+                                    }} onClick={() => createAttendanceSession()} >
                                     <span style={{
-                                        fontFamily:"Aria",
-                                        fontSize:"large"
+                                        fontFamily: "Aria",
+                                        fontSize: "large"
                                     }}>Tạo Phiên Điểm Danh   </span>
-                                    <Form.Select style={{
-                                        display:"inline-block",
-                                        height:"35px"
-                                    }} 
+                                    <Select style={{
+                                        display: "inline-block",
+                                        height: "35px",
+                                        width: "4rem"
+                                    }}
                                         aria-label="Default select example" onClick={(e) => handleClickPropagation(e)} onChange={handleSelectChange}>
                                         <option value="1">1</option>
                                         <option value="2">2</option>
@@ -291,19 +287,13 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                                         <option value="13">13</option>
                                         <option value="14">14</option>
                                         <option value="15">15</option>
-                                    </Form.Select>
+                                    </Select>
                                 </div>
                                 <div className='button'
                                     style={{
-                                        fontFamily:"Aria",
-                                        fontSize:"large"
-                                    }} onClick={() => createAttendanceSession()}>
-                                    <span>Chỉnh Sửa</span>
-                                </div>
-                                <div className='button'
-                                    style={{
-                                        fontFamily:"Aria",
-                                        fontSize:"large"
+                                        fontFamily: "Aria",
+                                        fontSize: "large",
+                                        backgroundColor: isSessionCreated ? "rgb(92, 193, 226)" : "gray",
                                     }} onClick={() => saveAttendanceSession()}>
                                     <span>Lưu phiên</span>
                                 </div>

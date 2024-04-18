@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import Modal from "react-bootstrap/Modal";
-import { Descriptions, Form, Popconfirm, Select, Table, message, Button } from "antd";
+import { Form, Select, Table, Button } from "antd";
 import "../style/Modal.css";
 import { useEffect, useRef, useState } from "react";
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
@@ -151,7 +151,7 @@ function AddTeacherModal({
   }
 
   useEffect(() => {
-    if (selectedCourse) {
+    if (selectedCourse && Array.isArray(courseSectionTeacherList[selectedCourse])) {
       // form.resetFields();
       form.setFieldValue('teacherList', courseSectionTeacherList[selectedCourse]?.map((teacher) => teacher.userId));
       setDisableSubmitButton(true);
@@ -181,7 +181,7 @@ function AddTeacherModal({
           <Modal.Title>Course detail</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {!courseSectionTeacherList[selectedCourse] ? (
+          {!courseSectionTeacherList[selectedCourse] && Array.isArray(courseSectionTeacherList[selectedCourse]) ? (
             <Table loading={true} />
           ) : (
             <>

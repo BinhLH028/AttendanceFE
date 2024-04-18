@@ -123,7 +123,7 @@ function AddStudentModal({
     }
 
     useEffect(() => {
-        if (selectedCourse) {
+        if (selectedCourse && Array.isArray(courseSectionStudentList[selectedCourse])) {
             form.setFieldValue('studentList', courseSectionStudentList[selectedCourse]?.map((student) => student.userId));
             setDisableSubmitButton(true);
         }
@@ -152,7 +152,7 @@ function AddStudentModal({
                     <Modal.Title>Course detail</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {!courseSectionStudentList[selectedCourse] ? (
+                    {!courseSectionStudentList[selectedCourse] && Array.isArray(courseSectionStudentList[selectedCourse]) ? (
                         <Table loading={true} />
                     ) : (
                         <>

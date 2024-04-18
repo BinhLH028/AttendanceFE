@@ -1,15 +1,12 @@
 import React, { useEffect, useRef } from "react";
+import { Form, Input, Button, message } from 'antd';
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import httpClient from "../api/http-common";
+import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import useAuth from "./hooks/useAuth";
 import "./style.css";
-import { faCheck, faTimes, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import axios from "axios";
-import { showSuccessMessage } from "../util/toastdisplay";
-import { toast } from "react-toastify";
-import { Bounce } from 'react-toastify';
+import { showErrorMessage, showSuccessMessage } from '../util/toastdisplay';
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -19,8 +16,10 @@ const PWD_REGEX = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/;
 
 const LoginComponent = () => {
 
-    // const refresh = useRefreshToken();
-    // const axiosPrivate = useAxiosPrivate(); 
+    const axiosPrivate = useAxiosPrivate();
+
+    const [formLogin] = Form.useForm();
+    const [formRegister] = Form.useForm();
 
     const { setAuth, persist, setPersist } = useAuth();
 
@@ -31,16 +30,14 @@ const LoginComponent = () => {
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
 
-
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [matchPwd, setMatchPwd] = useState('');
     const [user, setUser] = useState('');
 
     const [isLogin, setIsLogin] = useState(true);
-    const [validName, setValidName] = useState(false);
-    const [validPwd, setValidPwd] = useState(false);
-    const [validMatch, setValidMatch] = useState(false);
+    const [isForgotPassword, setIsForgotPassword] = useState(false);
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 
     const [errMsg, setErrMsg] = useState("");
 
@@ -49,23 +46,8 @@ const LoginComponent = () => {
     }, [])
 
     useEffect(() => {
-        setValidName(USER_REGEX.test(user));
-        // console.log("1" +validName+ "2" +validPwd+"3"+validMatch + "4"+ isLogin);
-    }, [user])
-
-    useEffect(() => {
-        setValidPwd(PWD_REGEX.test(password));
-        setValidName(USER_REGEX.test(user));
-        if (!isLogin)
-            setValidMatch(password === matchPwd);
-            // console.log("1name" +validName+ "2pwd" +validPwd+"3match"+validMatch + "4"+ isLogin);
-
-    }, [password, matchPwd, isLogin])
-
-    useEffect(() => {
         setErrMsg("");
     }, [email, password])
-
 
 
     const onClickSignUp = () => {
@@ -89,41 +71,18 @@ const LoginComponent = () => {
 
     const sendLoginRequest = async (e) => {
         let loginData = JSON.stringify({
-            email: email,
-            password: password,
+            email: e.email,
+            password: e.password,
         });
+        console.log(loginData);
         let response;
         try {
-            console.log(typeof loginData.email)
             response = await httpClient.post("/user/authenticate", loginData)
         }
         catch (error) {
-            if (loginData.email == undefined || loginData.password == undefined ) {
-                toast.error('Hãy nhập đủ tài khoản và mật khẩu', {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                    transition: Bounce,
-                });
-            } else {
-                toast.error('Sai tên đăng nhập hoặc mật khẩu', {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                    transition: Bounce,
-                });
+            if (loginData.email == undefined || loginData.password == undefined) {
+                showErrorMessage('Sai tên đăng nhập hoặc mật khẩu')
             }
-            
         }
         if (response) {
             const accessToken = response.data.body.accessToken;
@@ -149,60 +108,175 @@ const LoginComponent = () => {
             password: password,
             role: "TEACHER",
         });
-        const response = await httpClient.post("/user/register", registerData)
-        // console.log(response)
+        let response;
+        try {
+            response = await httpClient.post("/user/register", registerData);
+            if (response.data.statusCodeValue == 200) {
+                showSuccessMessage('Tạo tài khoản thành công')
+                formRegister.resetFields();
+                setUser('');
+                setEmail('');
+                setPassword('');
+                setMatchPwd('');
+            }
+            else if (response.data.statusCodeValue == 400) {
+                showErrorMessage(response.data.body[0])
+            }
+        }
+        catch (error) {
+            showErrorMessage('Có lỗi xảy ra, xin vui lòng thử lại sau!')
+        }
     }
+
+    const onFinish = (values) => {
+        if (values.email && values.password) {
+            // If both email and password are provided, perform login logic
+            sendLoginRequest(values);
+        } else {
+            // Display error message if either email or password is missing
+            message.error('Please enter both email and password');
+        }
+    };
+
+    const onFinishRegister = () => {
+        if (!user || !email || !password || !matchPwd) {
+            message.error('Please fill in all fields');
+            return;
+        }
+
+        if (password !== matchPwd) {
+            showErrorMessage('Mật khẩu không trùng khớp');
+            return;
+        }
+
+        // Send register request
+        sendRegisterRequest();
+    };
+
+    const handleBackToLogin = () => {
+        setIsForgotPassword(false);
+    };
+
+    const handleForgotPasswordClick = () => {
+        setIsForgotPassword(true);
+    };
 
     useEffect(() => {
         localStorage.setItem("persist", true);
     }, [persist])
 
+    const handleForgotPassword = (value) => {
+        console.log(value);
+    };
+
+    const renderForgotPasswordForm = () => {
+        return (
+            <Form onFinish={handleForgotPassword}>
+                <h1>Quên Mật Khẩu</h1>
+                <Form.Item name="email" rules={[{ required: true, message: 'Please input your email' }]}
+                style={{ width: "80%" }}
+                >
+                    <Input
+                        type="email"
+                        placeholder="Email"
+                        value={forgotPasswordEmail}
+                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    />
+                </Form.Item>
+                <Form.Item>
+                    <Button onClick={handleBackToLogin}
+                    style={{ height: "80%",margin:"1rem" }}
+                    >Quay lại</Button>
+                    <Button type="primary" htmlType="submit"
+                    style={{ height: "80%",margin:"1rem" }}>
+                        Gửi Email
+                    </Button>
+                </Form.Item>
+            </Form>
+        );
+    };
+
     return (
         <div className="login">
             <div class="container" id="container">
                 <div class="form-container sign-up">
-                    <form>
+                    <Form onFinish={onFinishRegister}
+                        form={formRegister}
+                    >
                         <h1>Tạo Tài Khoản</h1>
                         <span>Sử dụng email sinh viên của bạn</span>
-                        <input type="text" placeholder="Name"
-                            value={user}
-                            onChange={(e) => setUser(e.target.value)}
-                        />
-                        {!validName && <p style={{ color: 'red'}}>Tên không được để trống và không chấp nhận số</p>}
-                        <input type="email" placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <input type="password" placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <input type="password" placeholder="Re-Password"
-                            value={matchPwd}
-                            onChange={(e) => setMatchPwd(e.target.value)}
-                        />
-                        <button id="submit" type="button" disabled={!validName || !validPwd || !validMatch ? true : false}
-                            onClick={(e) => sendRegisterRequest()}>Đăng ký</button>
-                    </form>
+                        <Form.Item name="name" rules={[{ required: true, message: 'Please input your name' }]}
+                            style={{ width: "80%" }}>
+                            <Input
+                                type="text"
+                                placeholder="Name"
+                                value={user}
+                                onChange={(e) => setUser(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item name="email" rules={[{ required: true, message: 'Please input your email' }]}
+                            style={{ width: "80%" }}>
+                            <Input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item name="password"
+                            rules={[
+                                { required: true, message: 'Please input your password' },
+                                { min: 8, message: 'Password must be at least 8 characters' },
+                                { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number' }
+                            ]}
+                            style={{ width: "80%" }}>
+                            <Input.Password
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item name="matchPwd" rules={[{ required: true, message: 'Please re-enter your password' }]}
+                            style={{ width: "80%" }}>
+                            <Input.Password
+                                placeholder="Re-Password"
+                                value={matchPwd}
+                                onChange={(e) => setMatchPwd(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Form.Item>
+                            <Button type="primary" htmlType="submit"
+                                style={{ height: "100%" }}>
+                                Đăng ký
+                            </Button>
+                        </Form.Item>
+                    </Form>
                 </div>
                 <div class="form-container sign-in">
-                    <form>
-                        <h1>Đăng Nhập</h1>
-                        <span>Sử dụng email sinh viên của bạn</span>
-                        <input type="email" placeholder="Email"
-                            id="email"
-                            ref={userRef}
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <input type="password" placeholder="Password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <a href="#">Quên mật khẩu?</a>
-                        <button id="submit" type="button" onClick={(e) => sendLoginRequest()}>ĐĂNG NHẬP</button>
-                    </form>
+                    {isForgotPassword && renderForgotPasswordForm()}
+                    {!isForgotPassword &&
+                        <Form form={formLogin} onFinish={onFinish}>
+                            <h1>Đăng Nhập</h1>
+                            <span>Sử dụng email sinh viên của bạn</span>
+                            <Form.Item name="email" rules={[{ required: true, message: 'Please input your email' }]}
+                                style={{ width: "80%" }}
+                            >
+                                <Input placeholder="Email" ref={userRef} />
+                            </Form.Item>
+                            <Form.Item name="password" rules={[{ required: true, message: 'Please input your password' }]}
+                                style={{ width: "80%" }}
+                            >
+                                <Input.Password placeholder="Password" />
+                            </Form.Item>
+                            <a onClick={handleForgotPasswordClick}>Quên mật khẩu?</a>
+                            <Form.Item>
+                                <Button type="primary" htmlType="submit"
+                                    style={{ height: "100%" }}>
+                                    ĐĂNG NHẬP
+                                </Button>
+                            </Form.Item>
+                        </Form>
+                    }
                 </div>
                 <div class="toggle-container">
                     <div class="toggle">
