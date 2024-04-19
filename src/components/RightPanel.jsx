@@ -170,30 +170,9 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             let response;
             try {
                 response = await axiosPrivate.post("/attendance/save?cs=" + curCS, attendSession);
-
-                toast.success(`Lưu phiên điểm danh buổi thứ: ${lecture}`, {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                    transition: Bounce,
-                });
+                showSuccessMessage('Lưu phiên điểm danh buổi thứ ' + lecture);
             } catch (error) {
-                toast.error(`Lỗi: ${error.response.data}`, {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                    transition: Bounce,
-                });
+                showErrorMessage(error.response.data)
             }
         } else
             showErrorMessage("Giảng viên chưa tạo phiên điểm danh !")
@@ -205,8 +184,7 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                 const newEditedAttend = [...editedAttend, params.row.col20];
                 setEdittedAttend(newEditedAttend)
             }
-            console.log("binh+" + editedAttend);
-        } else {
+        } else if (["TEACHER"].includes(auth.userData.role)) {
             showErrorMessage("Mọi thay đổi trước khi mở phiên đều không được lưu lại!")
         }
     };
