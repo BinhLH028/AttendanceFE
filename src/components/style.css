@@ -45,9 +45,9 @@ body{
     margin: 20px 0;
 }
 
-.container span{
+/* .container span{
     font-size: 12px;
-}
+} */
 
 .container a{
     color: #333;
@@ -85,7 +85,7 @@ body{
     height: 100%;
 }
 
-.container input{
+.container .input_login {
     background-color: #eee;
     border: none;
     margin: 8px 0;
