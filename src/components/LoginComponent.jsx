@@ -11,7 +11,7 @@ import { showSuccessMessage } from "../util/toastdisplay";
 import { toast } from "react-toastify";
 import { Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { Button, Checkbox, Form, Input } from 'antd';
 
 const USER_REGEX = /^[A-Za-z\s]{5,25}$/;
 const EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i;
@@ -44,6 +44,8 @@ const LoginComponent = () => {
 
     const [errMsg, setErrMsg] = useState("");
 
+    const [form] = Form.useForm();
+
     useEffect(() => {
         userRef.current.focus();
     }, [])
@@ -58,7 +60,7 @@ const LoginComponent = () => {
         setValidName(USER_REGEX.test(user));
         if (!isLogin)
             setValidMatch(password === matchPwd);
-            // console.log("1name" +validName+ "2pwd" +validPwd+"3match"+validMatch + "4"+ isLogin);
+        // console.log("1name" +validName+ "2pwd" +validPwd+"3match"+validMatch + "4"+ isLogin);
 
     }, [password, matchPwd, isLogin])
 
@@ -98,7 +100,7 @@ const LoginComponent = () => {
             response = await httpClient.post("/user/authenticate", loginData)
         }
         catch (error) {
-            if (loginData.email == undefined || loginData.password == undefined ) {
+            if (loginData.email == undefined || loginData.password == undefined) {
                 toast.error('Hãy nhập đủ tài khoản và mật khẩu', {
                     position: "top-right",
                     autoClose: 5000,
@@ -123,7 +125,7 @@ const LoginComponent = () => {
                     transition: Bounce,
                 });
             }
-            
+
         }
         if (response) {
             const accessToken = response.data.body.accessToken;
@@ -153,6 +155,14 @@ const LoginComponent = () => {
         // console.log(response)
     }
 
+    const onFinish = (values) => {
+        console.log('Success:', values);
+    };
+
+    const onFinishFailed = (errorInfo) => {
+        console.log('Failed:', errorInfo);
+    };
+
     useEffect(() => {
         localStorage.setItem("persist", true);
     }, [persist])
@@ -161,14 +171,96 @@ const LoginComponent = () => {
         <div className="login">
             <div class="container" id="container">
                 <div class="form-container sign-up">
-                    <form>
+                    <Form
+                        onFinish={onFinish}
+                        onFinishFailed={onFinishFailed}
+                        autoComplete="on"
+                        form={form}
+                    >
                         <h1>Tạo Tài Khoản</h1>
                         <span>Sử dụng email sinh viên của bạn</span>
-                        <input type="text" placeholder="Name"
+                        <div className="w-full py-10 space-y-5">
+                            <Form.Item
+                                className="w-full"
+                                name="name"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Tên không được để trống và không chấp nhận số!',
+                                        pattern: { USER_REGEX }
+                                    },
+                                ]}
+                            >
+                                <Input className="h-10" placeholder="Name" />
+                            </Form.Item>
+
+                            <Form.Item
+                                className="w-full"
+                                name="email"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Nhap dung dinh dang email!',
+                                        type: 'email'
+                                    },
+                                ]}
+                            >
+                                <Input className="h-10" placeholder="Email" />
+                            </Form.Item>
+
+                            <Form.Item
+                                className="w-full"
+                                name="password"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Please input your password!',
+                                    },
+                                ]}
+                            >
+                                <Input.Password className="h-10" placeholder="Password" />
+                            </Form.Item>
+
+                            <Form.Item
+                                className="w-full"
+                                name="confirmPassword"
+                                dependencies={['password']}
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'pls retype pass'
+                                    },
+                                    ({ getFieldValue }) => ({
+                                        validator(_, value) {
+                                            if (!value || getFieldValue('password') === value) {
+                                                return Promise.resolve();
+                                            }
+                                            return Promise.reject(new Error('The new password that you entered do not match!'));
+                                        },
+                                    }),
+                                ]}
+                            >
+                                <Input.Password className="h-10" placeholder="Confirm Password" />
+                            </Form.Item>
+
+                            <Form.Item className="flex items-center justify-center">
+                                <Button
+                                    className="h-10"
+                                    id="submit"
+                                    htmlType="submit"
+                                    disabled={!form.isFieldsTouched(true) || form.getFieldError()
+                                        .filter(({ errors }) => errors.length)
+                                        .length > 0}
+                                // onClick={(e) => sendRegisterRequest()}
+                                >
+                                    Đăng ký</Button>
+                            </Form.Item>
+                        </div>
+                        {/* <input type="text" placeholder="Name"
                             value={user}
                             onChange={(e) => setUser(e.target.value)}
                         />
-                        {!validName && <p style={{ color: 'red'}}>Tên không được để trống và không chấp nhận số</p>}
+                        {!validName && <p style={{ color: 'red' }}></p>}
                         <input type="email" placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -180,22 +272,23 @@ const LoginComponent = () => {
                         <input type="password" placeholder="Re-Password"
                             value={matchPwd}
                             onChange={(e) => setMatchPwd(e.target.value)}
-                        />
-                        <button id="submit" type="button" disabled={!validName || !validPwd || !validMatch ? true : false}
-                            onClick={(e) => sendRegisterRequest()}>Đăng ký</button>
-                    </form>
+                        /> */}
+                        {/* <button id="submit" type="button" disabled={form.getFieldError().filter(({ errors }) => errors.length)
+                            .length > 0}
+                            onClick={(e) => sendRegisterRequest()}>Đăng ký</button> */}
+                    </Form>
                 </div>
                 <div class="form-container sign-in">
                     <form>
                         <h1>Đăng Nhập</h1>
                         <span>Sử dụng email sinh viên của bạn</span>
-                        <input type="email" placeholder="Email"
+                        <input type="email" placeholder="Email" className="input_login"
                             id="email"
                             ref={userRef}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
-                        <input type="password" placeholder="Password"
+                        <input type="password" placeholder="Password" className="input_login"
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
