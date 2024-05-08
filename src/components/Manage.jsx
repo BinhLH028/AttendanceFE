@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import useAxiosPrivate from "./hooks/useAxiosPrivate";
 import { Button, Form, Input, InputNumber, Select, Table, message, Upload } from "antd";
 import { showErrorMessage, showSuccessMessage } from "../util/toastdisplay";
+import httpClient from "../api/http-common";
 import "./../style/ManageStyle.css";
 
 const Manage = () => {
@@ -12,6 +13,7 @@ const Manage = () => {
   const [tableData, setTableData] = useState([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [value, setValue] = useState(1);
+  const [pageNum, setPageNum] = useState(0);
   let flattenedList = [];
 
 
@@ -189,6 +191,18 @@ const Manage = () => {
       dataIndex: "lecture15",
       key: "lecture15",
       render: renderBooleanIcon
+    },
+    {
+      title: "Buổi 16",
+      dataIndex: "lectureOption1",
+      key: "lectureOption1",
+      render: renderBooleanIcon
+    },
+    {
+      title: "Buổi 17",
+      dataIndex: "lectureOption2",
+      key: "lectureOption2",
+      render: renderBooleanIcon
     }
 
   ];
@@ -229,7 +243,7 @@ const Manage = () => {
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,
-      pageSize: 20,
+      pageSize: 10,
     },
   });
 
@@ -239,22 +253,16 @@ const Manage = () => {
       filters,
       ...sorter,
     });
-
     // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== tableParams.pagination?.pageSize) {
       setTableData([]);
     }
   };
 
-  // const filteredData = data.filter(item =>
-  //   item.toLowerCase().includes(filter.toLowerCase())
-  // );
-
   const getSections = async () => {
     try {
-      const response = await axiosPrivate.get("/section");
+      const response = await httpClient.get("/section");
       if (response) {
-        // setCourseSectionTeacherList(response.data.body);
         var listData = [];
         response.data.body.map((res) => {
           listData.push({
@@ -270,13 +278,11 @@ const Manage = () => {
     }
   };
 
-  const getTableData = async () => {
+  const getTableData = async (value) => {
     setTableData([]);
     setTableLoading(true);
     try {
-      const response = await axiosPrivate.post('/management', filter);
-      if (response)
-        console.log(response);
+      const response = await httpClient.post(`/management?page=${value - 1}&ps=${tableParams.pagination.pageSize}`, filter);
       response.data.body.content.map((item, index) => {
         // Destructure 'attendanceSheet' object from the item
         const { attendanceSheet, totalAbsence, ...rest } = item;
@@ -294,6 +300,7 @@ const Manage = () => {
         ...tableParams,
         pagination: {
           ...tableParams.pagination,
+          current: value,
           total: response.data.body.totalElements,
         },
       });
@@ -305,8 +312,9 @@ const Manage = () => {
   };
 
   const handleEnterKeyPress = (e) => {
-    if (e.key === 'Enter')
-      getTableData();
+    if (e.key === 'Enter') {
+      getTableData(1);
+    }
   }
 
   const updateFilter = async (propertyName, value) => {
@@ -322,9 +330,9 @@ const Manage = () => {
   };
 
   useEffect(() => {
-    getTableData();
-  }, [value]);
-  
+    getTableData(tableParams.pagination.current);
+  }, [JSON.stringify(tableParams), value]);
+
   // init data
   useEffect(() => {
     getSections();
@@ -333,7 +341,7 @@ const Manage = () => {
 
 
   return (
-    <div className="h-screen grid grid-cols-10 grid-rows-4 gap-4 rounded-xl mr-5">
+    <div className="h-screen grid grid-cols-10 grid-rows-4 gap-4 rounded-xl">
       <div className="col-span-10 row-span-full col-start-0 bg-gray-50 rounded-xl flex flex-col justify-start items-center">
         <Select
           allowClear
@@ -354,8 +362,6 @@ const Manage = () => {
             onChange={handleTableChange}
             rowKey={(record) => record.id}
             style={{ fontSize: '5px' }}
-            size="small"
-            
           />
         </div>
       </div>

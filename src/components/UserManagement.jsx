@@ -248,7 +248,7 @@ const UserManagement = () => {
 
             if (response.status === 200) {
                 showSuccessMessage(response.data);
-                getTeachers();
+                getTeachers(1);
                 onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
             } else {
                 showErrorMessage(response.data.body);
@@ -309,7 +309,7 @@ const UserManagement = () => {
 
     const handleEnterKeyPressTableTeacher = (e) => {
         if (e.key === 'Enter')
-            getTeachers();
+            getTeachers(1);
     }
 
     const updateFilterTableTeacher = async (propertyName, value) => {
@@ -341,20 +341,20 @@ const UserManagement = () => {
     }
 
     useEffect(() => {
-        getTeachers();
-    }, [teacherTableParams.current, teacherTableParams.pageSize]);
+        getTeachers(teacherTableParams.pagination.current);
+    }, [JSON.stringify(teacherTableParams)]);
 
     let teacherList = [];
 
-    const getTeachers = async () => {
+    const getTeachers = async (value) => {
         setTeacherTableData([]);
         setTeacherTableLoading(true);
 
         try {
-            const response = await axiosPrivate.post(`/teacher?page=${teacherTableParams.pagination.current - 1}`, filterTeacher);
+            const response = await axiosPrivate.post(`/teacher?page=${value - 1}&ps=${teacherTableParams.pagination.pageSize}`, filterTeacher);
             response.data.body.content.map((teacher, index) => {
                 const item = {
-                    index: (parseInt(teacherTableParams.pagination.current) - 1) *
+                    index: (parseInt(value) - 1) *
                         parseInt(teacherTableParams.pagination.pageSize) + index + 1,
                     ...teacher,
                     dob: teacher.dob.substring(0, 10).split('-').reverse().join('-'),
@@ -367,6 +367,7 @@ const UserManagement = () => {
                 ...teacherTableParams,
                 pagination: {
                     ...teacherTableParams.pagination,
+                    current: value,
                     total: response.data.body.totalElements,
                 },
             });
@@ -476,7 +477,7 @@ const UserManagement = () => {
             if (response.status === 200) {
                 console.log(response);
                 showSuccessMessage(response.data);
-                getStudents();
+                getStudents(1);
                 onSuccess(); // Call onSuccess callback provided by Ant Design Upload component
             } else {
                 console.log(response);
@@ -540,7 +541,7 @@ const UserManagement = () => {
 
     const handleEnterKeyPressTableStudent = (e) => {
         if (e.key === 'Enter')
-            getStudents();
+            getStudents(1);
     }
 
     const updateFilterTableStudent = async (propertyName, value) => {
@@ -567,7 +568,7 @@ const UserManagement = () => {
     const [studentTableLoading, setStudentTableLoading] = useState(true);
 
     const handleStudentTableChange = (pagination, filters, sorter) => {
-        setTeacherTableParams({
+        setStudentTableParams({
             pagination,
             filters,
             ...sorter,
@@ -575,20 +576,20 @@ const UserManagement = () => {
     }
 
     useEffect(() => {
-        getStudents();
-    }, [studentTableParams.current, studentTableParams.pageSize]);
+        getStudents(studentTableParams.pagination.current);
+    }, [JSON.stringify(studentTableParams)]);
 
     let studentList = [];
 
-    const getStudents = async () => {
+    const getStudents = async (value) => {
         setStudentTableData([]);
         setStudentTableLoading(true);
 
         try {
-            const response = await axiosPrivate.post(`/student?page=${studentTableParams.pagination.current - 1}`, filterStudent);
+            const response = await axiosPrivate.post(`/student?page=${value - 1}&ps=${studentTableParams.pagination.pageSize}`, filterStudent);
             response.data.body.content.map((student, index) => {
                 const item = {
-                    index: (parseInt(studentTableParams.pagination.current) - 1) *
+                    index: (parseInt(value) - 1) *
                         parseInt(studentTableParams.pagination.pageSize) + index + 1,
                     ...student,
                     dob: student.dob.substring(0, 10).split('-').reverse().join('-'),
@@ -601,6 +602,7 @@ const UserManagement = () => {
                 ...studentTableParams,
                 pagination: {
                     ...studentTableParams.pagination,
+                    current: value,
                     total: response.data.body.totalElements,
                 },
             });
@@ -625,9 +627,6 @@ const UserManagement = () => {
             showErrorMessage(error);
         }
     }
-
-    useEffect(() => {
-    }, []);
 
     //#region password
     const [formData, setFormData] = useState({

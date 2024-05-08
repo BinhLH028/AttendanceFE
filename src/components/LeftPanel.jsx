@@ -25,14 +25,15 @@ const items = [
     getItem('QUẢN LÝ', 'sub1', undefined, [
         getItem(<Link
             style={{
+                text: "white",
                 fontFamily: "Arial",
                 fontSize: "medium",
                 textDecoration: "none"
             }}
             to={'/course'}>Khóa học</Link>, '1'),
-
         getItem(<Link
             style={{
+                text: "white",
                 fontFamily: "Arial",
                 fontSize: "medium",
                 textDecoration: "none"
@@ -40,11 +41,12 @@ const items = [
             to={'/semester'}>LMH</Link>, '2'),
         getItem(<Link
             style={{
+                text: "white",
                 fontFamily: "Arial",
                 fontSize: "medium",
                 textDecoration: "none"
             }}
-            to={'/manage'}>Manage</Link>, '3')
+            to={'/manage'}>Thống kê</Link>, '3')
     ])
 ];
 
@@ -122,6 +124,10 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 await setSelectedCourse(localAttendanceData);
                 await setIsShowTable(true);
                 await setCurSC(id);
+            } else {
+                console.log("something");
+                await setSelectedCourse({});
+                await setIsShowTable(false);
             }
         } catch (error) {
             console.log(error);
@@ -162,11 +168,13 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
 
     const handleLogout = () => {
         logout();
+        axiosPrivate.post('/user/logout');
         localStorage.clear();
         navigate("/login", { replace: true });
     }
 
     const handleUserManagement = () => {
+        setIsShowTable(false);
         navigate("/user-management", { replace: true });
     }
 
@@ -186,7 +194,7 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
     return (
         <div class="leftpanel"
             style={{
-                width: "8rem",
+                width: "9rem",
                 height: "100vh",
                 display: "flex",
                 position: "fixed",
@@ -196,11 +204,6 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                 background: "linear-gradient(to bottom, rgb(0, 82, 212), rgb(67, 100, 247), rgb(111, 177, 252))",
                 boxShadow: "3px 7px 10px rgba(0,0,0,.5)"
             }}>
-
-            {/* {["USER"].includes(auth.userData.role) &&
-                    (
-                            
-                        )} */}
             <div style={{ width: '100%' }}>
                 <nav
                     style={{
@@ -226,13 +229,13 @@ const Leftpanel = ({ listSemester, selectedSemester, setSelectedCourse, setCurSC
                                 <li class="dropdown">
                                     <a href="#">Danh Sách Lớp Môn Học</a>
                                     <ul class="openbottom">
-                                        {listCourse !== null && listCourse.map(({ id, courseCode, courseName }) => (
+                                        {listCourse !== null && listCourse.map(({ id, courseCode, courseName, team }) => (
                                             <li key={id}>
                                                 <Link
                                                     to={{
                                                         pathname: `/cs/${id}`,
                                                     }}
-                                                    onClick={() => changeCourse(id)}>{courseCode}
+                                                    onClick={() => changeCourse(id)}>{courseCode + " " + team }
                                                 </Link>
                                             </li>
                                         ))}

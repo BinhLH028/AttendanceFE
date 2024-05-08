@@ -17,13 +17,10 @@ const Home = ({ children }) => {
   const [openModal, setOpenModal] = useState(false);
   const [isShowTable, setIsShowTable] = new useState(false);
   const [modalData, setModalData] = useState("");
+  const [listAttend, setListAttend] = useState([]);
 
   const [listSemester, setListSemester] = useState([])
   const [selectedSemester, setSelectedSemester] = useState()
-
-  // if (listSemester[0] == null || listSemester[0] == undefined) {
-  //   setSelectedSemester(listSemester[0])
-  // }
 
   const [selectedCourse, setSelectedCourse] = useState([]);
   const [curCS, setCurSC] = useState(0);
@@ -69,6 +66,7 @@ const Home = ({ children }) => {
         open={openModal}
         onClose={() => setOpenModal(false)}
         modalData={modalData}
+        listAttend={listAttend}
       />
       <Leftpanel {...{ listSemester, selectedSemester, setSelectedCourse, setCurSC, setIsShowTable }} />
       <Routes>
@@ -76,7 +74,7 @@ const Home = ({ children }) => {
       </Routes>
       {isShowTable === true ?
         <RightPanel
-          {...{ selectedCourse, curCS, setOpenModal, setModalData, isShowTable }}>
+          {...{ selectedCourse, curCS, setOpenModal, setModalData, isShowTable, setListAttend }}>
         </RightPanel> : <div style={{
           height: '100vh',
           display: 'flex',

@@ -94,7 +94,7 @@ function AddStudentModal({
                         style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
                         placeholder="Please select"
                         options={studentList.map((student) => ({
-                            label: student.userName,
+                            label: student.userCode,
                             value: student.userId,
                         }))}
                         onChange={handleSelectStudentChange}
@@ -110,8 +110,17 @@ function AddStudentModal({
         try {
             const response = await axiosPrivate.post("/student_enrolled/update", submitValues);
             if (response.status === 200) {
-                showSuccessMessage("Thêm sinh viên thành công!");
-                setCourseSectionStudentList(value.studentList);
+                showSuccessMessage("Thay đổi danh sách sinh viên thành công!");
+                // console.log(value.studentList);
+                let keys = Object.keys(courseSectionStudentList);
+                let data = courseSectionStudentList[keys[0]];
+
+                const updatedCsStudentList = data.filter(o => {
+                    value.studentList.includes(o.userId)
+                })
+
+                setCourseSectionStudentList(updatedCsStudentList);
+                console.log(updatedCsStudentList);
             }
             onClose();
             setLoading(false);

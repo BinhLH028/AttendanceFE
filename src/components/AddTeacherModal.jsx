@@ -106,7 +106,7 @@ function AddTeacherModal({
             style={{ width: '100%', borderColor: selectedValues.length === 0 ? 'red' : undefined }}
             placeholder="Please select"
             options={teacherList.map((teacher) => ({
-              label: teacher.userName,
+              label: teacher.email,
               value: teacher.userId,
             }))}
             onChange={handleSelectTeacherChange}

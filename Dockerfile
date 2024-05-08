@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# Install xdg-utils
+#Install xdg-utils
 RUN apk add --no-cache xdg-utils
 
 WORKDIR /app

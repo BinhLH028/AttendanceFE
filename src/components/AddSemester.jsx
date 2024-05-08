@@ -234,7 +234,7 @@ const AddSemester = () => {
       }
       const response = await axiosPrivate.get(
         `/course_section/${value}?page=${courseSectiontableParams.pagination.current - 1
-        }`
+        }&ps=${courseSectiontableParams.pagination.pageSize}`
       );
       if (response)
         response.data.body.content.map((res, index) => {

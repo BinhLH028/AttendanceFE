@@ -483,7 +483,7 @@ const AddCourse = () => {
       }
       const response = await axiosPrivate.get(
         `/course_section/${value}?page=${courseSectiontableParams.pagination.current - 1
-        }`
+        }&ps=${courseSectiontableParams.pagination.pageSize}`
       );
       if (response)
         response.data.body.content?.map((res, index) => {
@@ -1037,6 +1037,8 @@ const AddCourse = () => {
                 <Select.Option value="N1">N1</Select.Option>
                 <Select.Option value="N2">N2</Select.Option>
                 <Select.Option value="N3">N3</Select.Option>
+                <Select.Option value="N4">N4</Select.Option>
+                <Select.Option value="N5">N5</Select.Option>
               </Select>
             </Form.Item>
             <Form.Item

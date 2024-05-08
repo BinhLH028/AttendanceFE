@@ -29,10 +29,10 @@ function App() {
               <Route path='user-management/*' element={<Home> <UserManagement/> </Home>} />
             </Route>
             <Route path='/' element={<RequireAuth allowedRoles={["TEACHER", "ADMIN"]} />}>
-              <Route path='manage' element={<Home><Manage /> </Home>} />
+              <Route path='manage' element={<Home><Manage /> </Home>}/>
             </Route>
           </Route>
-
+          <Route path='/diemdanh' element={<Manage />} />
           <Route path='/login' element={<LoginComponent />}></Route>
           <Route path='/register' element={<RegisterComponent />}></Route>
 

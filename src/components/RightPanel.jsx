@@ -6,15 +6,13 @@ import useAuth from "./hooks/useAuth";
 import useAxiosPrivate from './hooks/useAxiosPrivate';
 import { Select, } from "antd";
 import { DataGrid } from '@mui/x-data-grid';
-
 import "./../style/RightPanel.css";
-import { toast } from "react-toastify";
-import { Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { showErrorMessage, showSuccessMessage } from '../util/toastdisplay';
+import CustomPrompt from './PromtSave';
 
 var stompClient = null;
-const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowTable }) => {
+const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowTable, setListAttend }) => {
 
     const client = new ClientJS();
 
@@ -33,11 +31,19 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
 
     const [isSessionCreated, setIsSessionCreated] = useState(false);
 
+    const [isHaveData, setIsHaveData] = useState(false);
+
+    const [showPrompt, setShowPrompt] = useState(false);
+    const [onSaveData, setOnSaveData] = useState(new Map());
+
     let i = 1;
 
     const setUpData = async (selectedCourse) => {
         setData(selectedCourse)
         console.log(data)
+        if (Array.isArray(selectedCourse)) {
+            setIsHaveData(true)
+        }
 
         await setRows(selectedCourse.map(({ userId, userCode, userName, dob, sheetId, attendanceSheet }) => ({
             id: i++,
@@ -60,36 +66,42 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             col17: attendanceSheet.lecture13,
             col18: attendanceSheet.lecture14,
             col19: attendanceSheet.lecture15,
-            col20: userId
+            col20: attendanceSheet.lectureOption1,
+            col21: attendanceSheet.lectureOption2,
+            col22: userId
         })));
 
         console.log(rows)
 
         setColumns([
+            { field: 'id', headerName: 'STT', width: 70 },
             { field: 'col1', headerName: 'Mã SV', width: 150 },
             { field: 'col2', headerName: 'Họ và tên', width: 150 },
             { field: 'col3', headerName: 'Ngày sinh', width: 150 },
             { field: 'col4', headerName: 'Số buổi vắng', width: 150 },
-            { field: 'col5', headerName: 'Buổi 1', width: 150, type: 'boolean', editable: true },
-            { field: 'col6', headerName: 'Buổi 2', width: 150, type: 'boolean', editable: true },
-            { field: 'col7', headerName: 'Buổi 3', width: 150, type: 'boolean', editable: true },
-            { field: 'col8', headerName: 'Buổi 4', width: 150, type: 'boolean', editable: true },
-            { field: 'col9', headerName: 'Buổi 5', width: 150, type: 'boolean', editable: true },
-            { field: 'col10', headerName: 'Buổi 6', width: 150, type: 'boolean', editable: true },
-            { field: 'col11', headerName: 'Buổi 7', width: 150, type: 'boolean', editable: true },
-            { field: 'col12', headerName: 'Buổi 8', width: 150, type: 'boolean', editable: true },
-            { field: 'col13', headerName: 'Buổi 9', width: 150, type: 'boolean', editable: true },
-            { field: 'col14', headerName: 'Buổi 10', width: 150, type: 'boolean', editable: true },
-            { field: 'col15', headerName: 'Buổi 11', width: 150, type: 'boolean', editable: true },
-            { field: 'col16', headerName: 'Buổi 12', width: 150, type: 'boolean', editable: true },
-            { field: 'col17', headerName: 'Buổi 13', width: 150, type: 'boolean', editable: true },
-            { field: 'col18', headerName: 'Buổi 14', width: 150, type: 'boolean', editable: true },
-            { field: 'col19', headerName: 'Buổi 15', width: 150, type: 'boolean', editable: true },
-            { field: 'col20', headerName: 'Attendance ID', width: 150, hide: true },
+            { field: 'col5', headerName: 'Buổi 1', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col6', headerName: 'Buổi 2', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col7', headerName: 'Buổi 3', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col8', headerName: 'Buổi 4', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col9', headerName: 'Buổi 5', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col10', headerName: 'Buổi 6', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col11', headerName: 'Buổi 7', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col12', headerName: 'Buổi 8', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col13', headerName: 'Buổi 9', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col14', headerName: 'Buổi 10', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col15', headerName: 'Buổi 11', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col16', headerName: 'Buổi 12', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col17', headerName: 'Buổi 13', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col18', headerName: 'Buổi 14', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col19', headerName: 'Buổi 15', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col20', headerName: 'Buổi 16', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col21', headerName: 'Buổi 17', width: 150, type: 'boolean', editable: ["TEACHER"].includes(auth.userData.role) },
+            { field: 'col22', headerName: 'Attendance ID', width: 150, hide: true },
         ]);
     }
 
     useEffect(() => {
+        setIsHaveData(false);
         if (selectedCourse != '{}' && selectedCourse != undefined) {
             setUpData(selectedCourse);
         }
@@ -140,15 +152,24 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
     }
 
     const onAttendRqRecv = (payload) => {
-        console.log(payload);
+        // console.log(payload);
         console.log(JSON.parse(payload.body).content);
         const msg = JSON.parse(payload.body).content.split(":");
         attenData.set(msg[1], parseInt(msg[0]))
         setAttenData(new Map(attenData));
-        for (let [key, value] of attenData) {
-            console.log(key + " : " + value);
-        }
 
+        setTimeout(() => {
+            axiosPrivate.post("/send-private-message/" + msg[2],
+                JSON.stringify({
+                    messageContent: "success"
+                })
+            ).catch(error => { console.log(error) });
+        }, 0);
+
+
+        onSaveData.set(msg[1], msg[2])
+        setOnSaveData(new Map(onSaveData))
+        // setListAttend(new Map(attenData));
     }
 
     const handleClickPropagation = (event) => {
@@ -161,28 +182,53 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
 
     const saveAttendanceSession = async () => {
         if (isSessionCreated) {
-            setIsSessionCreated(false);
-            var attendSession = {
-                lectureNum: parseInt(lecture),
-                listStudentId: Array.from(attenData.values()),
-                listEditUserAttends: editedAttend
-            }
-            let response;
-            try {
-                response = await axiosPrivate.post("/attendance/save?cs=" + curCS, attendSession);
-                showSuccessMessage('Lưu phiên điểm danh buổi thứ ' + lecture);
-            } catch (error) {
-                showErrorMessage(error.response.data)
-            }
+            setShowPrompt(true);
+            
+            // setIsSessionCreated(false);
+            // var attendSession = {
+            //     lectureNum: parseInt(lecture),
+            //     listStudentId: Array.from(attenData.values()),
+            //     listEditUserAttends: editedAttend
+            // }
+            // let response;
+            // try {
+            //     response = await axiosPrivate.post("/attendance/save?cs=" + curCS, attendSession);
+            //     showSuccessMessage('Lưu phiên điểm danh buổi thứ ' + lecture);
+            // } catch (error) {
+            //     showErrorMessage(error.response.data)
+            // }
         } else
             showErrorMessage("Giảng viên chưa tạo phiên điểm danh !")
     }
+
+    const handleConfirmSave = async () => {
+        setShowPrompt(false);
+        setIsSessionCreated(false);
+
+        var attendSession = {
+            lectureNum: parseInt(lecture),
+            listStudentId: Array.from(attenData.values()),
+            listEditUserAttends: editedAttend
+        };
+
+        try {
+            const response = await axiosPrivate.post("/attendance/save?cs=" + curCS, attendSession);
+            showSuccessMessage('Lưu phiên điểm danh buổi thứ ' + lecture);
+            stompClient.disconnect();
+        } catch (error) {
+            showErrorMessage(error.response.data);
+        }
+    };
+
     // TODO: fix
     const onCellEditCommit = (params) => {
         if (isSessionCreated) {
-            if (!editedAttend.includes(params.row.col20)) {
-                const newEditedAttend = [...editedAttend, params.row.col20];
+            if (!editedAttend.includes(params.row.col22)) {
+                const newEditedAttend = [...editedAttend, params.row.col22];
                 setEdittedAttend(newEditedAttend)
+
+                onSaveData.set(params.row.col22, params.row.col1 + "@vnu.edu.vn")
+                setOnSaveData(new Map(onSaveData))
             }
         } else if (["TEACHER"].includes(auth.userData.role)) {
             showErrorMessage("Mọi thay đổi trước khi mở phiên đều không được lưu lại!")
@@ -206,7 +252,13 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
             background: "transparent",
             padding: "20px 0 0 10rem"
         }}>
-            {(isShowTable === true) ? (
+            <CustomPrompt
+                isOpen={showPrompt}
+                onClose={() => setShowPrompt(false)}
+                onConfirm={handleConfirmSave}
+                listAttend={onSaveData}
+            />
+            {(isShowTable === true && isHaveData) ? (
                 <div>
                     <div style={{
                         height: "auto",
@@ -217,9 +269,14 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                         <DataGrid
                             rows={rows}
                             columns={columns}
-                            pageSizeOptions={[]}
+                            pageSizeOptions={[5, 10, 25, 50]}
                             columnVisibilityModel={{
-                                col20: false,
+                                col22: false,
+                            }}
+                            initialState={{
+                                pagination: {
+                                    paginationModel: { pageSize: 10 },
+                                },
                             }}
                             onCellEditStop={onCellEditCommit} />
                     </div>
@@ -231,10 +288,11 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                                 style={{
                                     display: "flex",
                                     flexDirection: "row",
-                                    justifyContent: "center",
-                                    position: "absolute",
+                                    // justifyContent: "center",
+                                    // position: "absolute",
                                     bottom: "50px",
-                                    marginLeft: "4.5rem"
+                                    marginLeft: "4.5rem",
+                                    marginTop: "1.5rem"
                                 }}>
                                 <div className='button'
                                     style={{
@@ -265,6 +323,8 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                                         <option value="13">13</option>
                                         <option value="14">14</option>
                                         <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
                                     </Select>
                                 </div>
                                 <div className='button'
@@ -275,10 +335,21 @@ const RightPanel = ({ selectedCourse, curCS, setOpenModal, setModalData, isShowT
                                     }} onClick={() => saveAttendanceSession()}>
                                     <span>Lưu phiên</span>
                                 </div>
+
                             </div>
+
                         )}
                 </div>
-            ) : (<div></div>)}
+            ) : (
+                <div className='flex flex-col justify-center items-center'>
+                    <p style={{ color: "white", fontSize: "50px" }}>Chưa có dữ liệu học sinh</p>
+                    <img
+                        src="../src/resource/image.png"
+                        style={{ width: "80rem", height: "50rem" }}
+                    >
+                    </img>
+                </div>
+            )}
 
         </div>
     )
